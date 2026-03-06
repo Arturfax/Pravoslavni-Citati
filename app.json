@@ -37,7 +37,13 @@
         }
       ],
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "@bacons/apple-targets",
+        {
+          "appleTeamId": "XXXXXXXXXX"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
