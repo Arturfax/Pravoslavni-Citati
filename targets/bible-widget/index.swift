@@ -70,7 +70,6 @@ struct VerseProvider: TimelineProvider {
 // MARK: - Colors
 
 private let darkBg  = Color(red: 4/255,   green: 7/255,   blue: 16/255)
-private let cream   = Color(red: 240/255, green: 234/255, blue: 214/255)
 private let gold    = Color(red: 201/255, green: 168/255, blue: 76/255)
 
 // MARK: - Views
@@ -80,24 +79,23 @@ struct VerseWidgetView: View {
     @Environment(\.widgetFamily) var family
 
     var body: some View {
-        ZStack {
-            darkBg
-            VStack(alignment: .center, spacing: family == .systemSmall ? 6 : 10) {
-                Text("\u{201E}\(entry.verse.text)\u{201C}")
-                    .font(.system(size: verseSize, design: .serif))
-                    .italic()
-                    .foregroundColor(cream)
-                    .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.55)
-                    .lineLimit(family == .systemSmall ? 7 : 15)
+        VStack(alignment: .center, spacing: family == .systemSmall ? 6 : 10) {
+            Text("\u{201E}\(entry.verse.text)\u{201C}")
+                .font(.system(size: verseSize, design: .serif))
+                .italic()
+                .foregroundStyle(.white)
+                .multilineTextAlignment(.center)
+                .minimumScaleFactor(0.55)
+                .lineLimit(family == .systemSmall ? 7 : 15)
+                .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
 
-                Text(entry.verse.ref)
-                    .font(.system(size: refSize, weight: .semibold))
-                    .foregroundColor(gold)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(padding)
+            Text(entry.verse.ref)
+                .font(.system(size: refSize, weight: .semibold))
+                .foregroundStyle(gold)
+                .multilineTextAlignment(.center)
+                .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
         }
+        .padding(padding)
     }
 
     private var verseSize: CGFloat {
@@ -131,11 +129,18 @@ struct BibleWidget: Widget {
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: VerseProvider()) { entry in
-            if #available(iOS 17.0, *) {
+            if #available(iOS 26.0, *) {
                 VerseWidgetView(entry: entry)
-                    .containerBackground(darkBg, for: .widget)
+                    .containerBackground(.clear, for: .widget)
+                    .glassEffect(in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            } else if #available(iOS 17.0, *) {
+                VerseWidgetView(entry: entry)
+                    .containerBackground(.clear, for: .widget)
             } else {
-                VerseWidgetView(entry: entry)
+                ZStack {
+                    darkBg
+                    VerseWidgetView(entry: entry)
+                }
             }
         }
         .configurationDisplayName("Стих Дана")
