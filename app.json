@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Bible Clock",
-    "slug": "bible-clock",
+    "name": "Pravoslvni Citati",
+    "slug": "pravoslvnicitati",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "bibleclock",
+    "scheme": "pravoslvnicitati",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
@@ -15,10 +15,10 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.bibleclock"
+      "bundleIdentifier": "com.pravoslvnicitati.app"
     },
     "android": {
-      "package": "com.bibleclock",
+      "package": "com.pravoslvnicitati.app",
       "adaptiveIcon": {
         "backgroundColor": "#080C18",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
