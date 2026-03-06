@@ -17,104 +17,104 @@ import Colors from "@/constants/colors";
 
 const BIBLE_VERSES = [
   {
-    text: "For I know the plans I have for you, declares the Lord, plans to prosper you and not to harm you, plans to give you hope and a future.",
-    ref: "Jeremiah 29:11",
+    text: "Јер ја знам мисли које мислим за вас, говори Господ, мисли мирне а не зле, да вам дам будућност и наду.",
+    ref: "Јеремија 29:11",
   },
   {
-    text: "I can do all this through him who gives me strength.",
-    ref: "Philippians 4:13",
+    text: "Господ је пастир мој, ништа ми не недостаје. На зеленим пашњацима Он ме одмара, поред тихих вода Он ме води.",
+    ref: "Псалм 23:1-2",
   },
   {
-    text: "The Lord is my shepherd, I lack nothing. He makes me lie down in green pastures, he leads me beside quiet waters, he refreshes my soul.",
-    ref: "Psalm 23:1-3",
+    text: "Уздај се у Господа свим срцем својим и немој се ослањати на разум свој; у свим путевима својим познавај Га, и Он ће управљати стазама твојим.",
+    ref: "Пословице 3:5-6",
   },
   {
-    text: "Trust in the Lord with all your heart and lean not on your own understanding; in all your ways submit to him, and he will make your paths straight.",
-    ref: "Proverbs 3:5-6",
+    text: "Будите храбри и јаки, не бојте се и не плашите их се, јер Господ Бог твој иде с тобом, неће те оставити нити ће те напустити.",
+    ref: "Поновљени закон 31:6",
   },
   {
-    text: "Be strong and courageous. Do not be afraid; do not be discouraged, for the Lord your God will be with you wherever you go.",
-    ref: "Joshua 1:9",
+    text: "Јер тако Бог возљуби свет да је Сина Свога јединородног дао, да сваки ко Га вјерује не погине него да има живот вјечни.",
+    ref: "Јован 3:16",
   },
   {
-    text: "And we know that in all things God works for the good of those who love him, who have been called according to his purpose.",
-    ref: "Romans 8:28",
+    text: "Господ је светлост моја и спасење моје, кога ћу се бојати? Господ је јачина живота мојега, кога ћу се уплашити?",
+    ref: "Псалм 27:1",
   },
   {
-    text: "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.",
-    ref: "John 3:16",
+    text: "Дођите к мени сви уморни и натоварени и ја ћу вас одморити.",
+    ref: "Матеј 11:28",
   },
   {
-    text: "The Lord is my light and my salvation — whom shall I fear? The Lord is the stronghold of my life — of whom shall I be afraid?",
-    ref: "Psalm 27:1",
+    text: "Не брините ни за шта, него у свему молитвом и мољењем са захваљивањем износите жеље своје пред Бога.",
+    ref: "Филипљанима 4:6",
   },
   {
-    text: "Come to me, all you who are weary and burdened, and I will give you rest.",
-    ref: "Matthew 11:28",
+    text: "А они који чекају на Господа добиваће нову снагу, расти ће крилима као орлови, трчати ће и неће се уморити, ходити ће и неће клонути.",
+    ref: "Исаија 40:31",
   },
   {
-    text: "Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God.",
-    ref: "Philippians 4:6",
+    text: "Хвалите Господа јер је добар, јер је вечна милост Његова.",
+    ref: "Псалм 107:1",
   },
   {
-    text: "The Lord bless you and keep you; the Lord make his face shine on you and be gracious to you.",
-    ref: "Numbers 6:24-25",
+    text: "Сву бригу своју баците на Њега, јер Он брине за вас.",
+    ref: "Прва Петрова 5:7",
   },
   {
-    text: "But those who hope in the Lord will renew their strength. They will soar on wings like eagles; they will run and not grow weary.",
-    ref: "Isaiah 40:31",
+    text: "Господ Бог твој је с тобом, силни Спаситељ. Он ће се радовати теби са радошћу, обновити ће те у љубави Својој, клицаће над тобом с радошћу.",
+    ref: "Софонија 3:17",
   },
   {
-    text: "Give thanks to the Lord, for he is good; his love endures forever.",
-    ref: "Psalm 107:1",
+    text: "Увек се радујте, непрестано се молите, у свему захваљујте: јер је то воља Божја у Христу Исусу за вас.",
+    ref: "Прва Солуњанима 5:16-18",
   },
   {
-    text: "Cast all your anxiety on him because he cares for you.",
-    ref: "1 Peter 5:7",
+    text: "Иако прођем долином сенке смртне, не бојим се зла, јер си Ти са мном; штап Твој и палица Твоја утешавају ме.",
+    ref: "Псалм 23:4",
   },
   {
-    text: "The Lord your God is with you, the Mighty Warrior who saves. He will take great delight in you; in his love he will no longer rebuke you, but will rejoice over you with singing.",
-    ref: "Zephaniah 3:17",
+    text: "Јер сте благодаћу спасени, кроз веру; и то није из вас, дар је Божји.",
+    ref: "Ефесцима 2:8",
   },
   {
-    text: "Rejoice always, pray continually, give thanks in all circumstances; for this is God's will for you in Christ Jesus.",
-    ref: "1 Thessalonians 5:16-18",
+    text: "Тражите прво царство Божје и правду Његову, и све ово ће вам се додати.",
+    ref: "Матеј 6:33",
   },
   {
-    text: "Even though I walk through the darkest valley, I will fear no evil, for you are with me; your rod and your staff, they comfort me.",
-    ref: "Psalm 23:4",
+    text: "А сада остаје вера, нада, љубав, ово троје; а највећа од тих је љубав.",
+    ref: "Прва Коринћанима 13:13",
   },
   {
-    text: "For it is by grace you have been saved, through faith — and this is not from yourselves, it is the gift of God.",
-    ref: "Ephesians 2:8",
+    text: "Ово је дан који учини Господ, радујмо се и веселимо се у Њему.",
+    ref: "Псалм 118:24",
   },
   {
-    text: "But seek first his kingdom and his righteousness, and all these things will be given to you as well.",
-    ref: "Matthew 6:33",
+    text: "Реч Твоја је светиљка нози мојој и светлост стази мојој.",
+    ref: "Псалм 119:105",
   },
   {
-    text: "And now these three remain: faith, hope and love. But the greatest of these is love.",
-    ref: "1 Corinthians 13:13",
+    text: "Мир Божји, који превазилази сваки ум, чуваће срца ваша и мисли ваше у Христу Исусу.",
+    ref: "Филипљанима 4:7",
   },
   {
-    text: "This is the day the Lord has made; we will rejoice and be glad in it.",
-    ref: "Psalm 118:24",
+    text: "Блажени чисти срцем, јер ће они Бога видети.",
+    ref: "Матеј 5:8",
   },
   {
-    text: "For where two or three gather in my name, there am I with them.",
-    ref: "Matthew 18:20",
+    text: "Ако Бог с нама, ко је против нас?",
+    ref: "Римљанима 8:31",
   },
   {
-    text: "Your word is a lamp for my feet, a light on my path.",
-    ref: "Psalm 119:105",
+    text: "Будите добри и милосрдни међу собом, праштајте један другоме, као што је и Бог у Христу опростио вама.",
+    ref: "Ефесцима 4:32",
   },
   {
-    text: "I have been crucified with Christ and I no longer live, but Christ lives in me.",
-    ref: "Galatians 2:20",
+    text: "Господ благословио тебе и сачувао те; Господ осветлио лице Своје на тебе и помиловао те.",
+    ref: "Бројеви 6:24-25",
   },
   {
-    text: "The peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus.",
-    ref: "Philippians 4:7",
+    text: "Не бој се, јер сам Ја с тобом; не плаши се, јер Ја сам Бог твој; ојачао сам те и помогао ти.",
+    ref: "Исаија 41:10",
   },
 ];
 
@@ -138,14 +138,14 @@ function formatSeconds(date: Date): string {
 
 function formatDate(date: Date): string {
   const days = [
-    "Sunday", "Monday", "Tuesday", "Wednesday",
-    "Thursday", "Friday", "Saturday",
+    "Недеља", "Понедељак", "Уторак", "Среда",
+    "Четвртак", "Петак", "Субота",
   ];
   const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "јануар", "фебруар", "март", "април", "мај", "јун",
+    "јул", "август", "септембар", "октобар", "новембар", "децембар",
   ];
-  return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;
+  return `${days[date.getDay()]}, ${date.getDate()}. ${months[date.getMonth()]}`;
 }
 
 export default function HomeScreen() {
@@ -201,7 +201,7 @@ export default function HomeScreen() {
         style={[
           styles.inner,
           {
-            paddingTop: topPadding + 16,
+            paddingTop: topPadding + 8,
             paddingBottom: bottomPadding + 16,
           },
         ]}
@@ -232,40 +232,40 @@ export default function HomeScreen() {
 
         <View style={styles.divider} />
 
-        <Animated.View style={[styles.verseCard, { opacity: fadeAnim }]}>
-          <View style={styles.verseLabelRow}>
-            <FontAwesome5
-              name="bible"
-              size={13}
-              color={Colors.gold}
-              style={{ marginRight: 7 }}
-            />
-            <Text style={styles.verseLabelText}>VERSE OF THE DAY</Text>
-            <Pressable
-              onPress={handleRefreshVerse}
-              style={({ pressed }) => [
-                styles.refreshBtn,
-                { opacity: pressed ? 0.5 : 1 },
-              ]}
-              hitSlop={14}
-            >
-              <Ionicons
-                name="refresh-circle-outline"
-                size={22}
+        <View style={styles.verseWrapper}>
+          <Animated.View style={[styles.verseCard, { opacity: fadeAnim }]}>
+            <View style={styles.verseLabelRow}>
+              <FontAwesome5
+                name="bible"
+                size={13}
                 color={Colors.gold}
+                style={{ marginRight: 7 }}
               />
-            </Pressable>
-          </View>
+              <Text style={styles.verseLabelText}>СТИХ ДАНА</Text>
+              <Pressable
+                onPress={handleRefreshVerse}
+                style={({ pressed }) => [
+                  styles.refreshBtn,
+                  { opacity: pressed ? 0.5 : 1 },
+                ]}
+                hitSlop={14}
+              >
+                <Ionicons
+                  name="refresh-circle-outline"
+                  size={22}
+                  color={Colors.gold}
+                />
+              </Pressable>
+            </View>
 
-          <Text style={styles.verseText}>
-            {"\u201C"}
-            {verse.text}
-            {"\u201D"}
-          </Text>
-          <Text style={styles.refText}>{verse.ref}</Text>
-        </Animated.View>
-
-        <View style={styles.bottomGlow} pointerEvents="none" />
+            <Text style={styles.verseText}>
+              {"\u201E"}
+              {verse.text}
+              {"\u201C"}
+            </Text>
+            <Text style={styles.refText}>{verse.ref}</Text>
+          </Animated.View>
+        </View>
       </View>
     </View>
   );
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 8,
+    marginBottom: 0,
   },
   crossContainer: {
     width: 36,
@@ -299,10 +299,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   clockSection: {
-    flex: 1,
     alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
+    paddingTop: 12,
+    paddingBottom: 20,
   },
   timeRow: {
     flexDirection: "row",
@@ -336,8 +335,11 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: "rgba(201, 168, 76, 0.18)",
-    marginHorizontal: 0,
-    marginBottom: 28,
+    marginBottom: 0,
+  },
+  verseWrapper: {
+    flex: 1,
+    justifyContent: "center",
   },
   verseCard: {
     backgroundColor: "rgba(15, 22, 38, 0.85)",
@@ -345,7 +347,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(201, 168, 76, 0.18)",
     padding: 24,
-    marginBottom: 12,
   },
   verseLabelRow: {
     flexDirection: "row",
@@ -377,13 +378,5 @@ const styles = StyleSheet.create({
     color: Colors.gold,
     textAlign: "center",
     letterSpacing: 0.5,
-  },
-  bottomGlow: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 180,
-    backgroundColor: "transparent",
   },
 });

@@ -16,23 +16,23 @@ import Colors from "@/constants/colors";
 const STEPS = [
   {
     icon: "construct-outline" as const,
-    title: "Build the App",
-    desc: "Lock screen widgets require a native app build via Expo EAS (Expo Application Services). You cannot add lock screen widgets through Expo Go — a standalone build is needed.",
+    title: "Направи апликацију",
+    desc: "Виџети за закључани екран захтевају нативни iOS build преко Expo EAS (Expo Application Services). Кроз Expo Go није могуће додати виџете — потребан је standalone build.",
   },
   {
     icon: "cloud-upload-outline" as const,
-    title: "Publish via EAS Build",
-    desc: "Run `eas build --platform ios` to create a production .ipa file. This packages the app with native iOS widget extensions (WidgetKit).",
+    title: "Публикуј преко EAS Build",
+    desc: "Покрени `eas build --platform ios` да направиш production .ipa фајл. Ово пакује апликацију са нативним iOS widget екстензијама (WidgetKit).",
   },
   {
     icon: "phone-portrait-outline" as const,
-    title: "Install on Your iPhone",
-    desc: "Install the published app from the App Store or via TestFlight. Once installed natively, your iPhone will recognize the widget.",
+    title: "Инсталирај на iPhone",
+    desc: "Инсталирај апликацију из App Store-а или преко TestFlight-а. Када је апликација нативно инсталирана, iPhone ће препознати виџет.",
   },
   {
     icon: "lock-closed-outline" as const,
-    title: "Add to Lock Screen",
-    desc: "Long press your iPhone lock screen → tap Customize → tap the lock screen area → tap Add Widgets → find Bible Clock and add it. The widget will show the current time and your verse.",
+    title: "Додај на закључани екран",
+    desc: "Дуго притисни закључани екран → тапни Прилагоди → тапни на простор за виџете → тапни Додај виџете → пронађи Библијски сат и додај га. Виџет ће приказивати тренутно време и дневни стих.",
   },
 ];
 
@@ -61,7 +61,7 @@ export default function WidgetInfoScreen() {
         >
           <Ionicons name="chevron-down" size={26} color={Colors.gold} />
         </Pressable>
-        <Text style={styles.headerTitle}>Lock Screen Widget</Text>
+        <Text style={styles.headerTitle}>Виџет за закључани екран</Text>
         <View style={{ width: 36 }} />
       </View>
 
@@ -77,10 +77,10 @@ export default function WidgetInfoScreen() {
           <View style={styles.heroIconBg}>
             <FontAwesome5 name="cross" size={28} color={Colors.gold} />
           </View>
-          <Text style={styles.heroTitle}>Add to Your Lock Screen</Text>
+          <Text style={styles.heroTitle}>Додај на закључани екран</Text>
           <Text style={styles.heroSubtitle}>
-            Keep God's Word on your lock screen — the time and a daily Bible
-            verse, always within reach.
+            Нека Божја реч увек буде пред тобом — тренутно време и дневни
+            библијски стих, увек надохват руке.
           </Text>
         </View>
 
@@ -92,8 +92,8 @@ export default function WidgetInfoScreen() {
             style={{ marginRight: 10, marginTop: 1 }}
           />
           <Text style={styles.noteText}>
-            iOS lock screen widgets require a native app build. Follow these
-            steps to get the widget on your device.
+            iOS виџети за закључани екран захтевају нативни build апликације.
+            Прати ове кораке да добијеш виџет на свом уређају.
           </Text>
         </View>
 
@@ -127,11 +127,11 @@ export default function WidgetInfoScreen() {
             style={{ marginRight: 10, marginTop: 1 }}
           />
           <View style={{ flex: 1 }}>
-            <Text style={styles.tipTitle}>Quick Tip</Text>
+            <Text style={styles.tipTitle}>Корисни савет</Text>
             <Text style={styles.tipText}>
-              Once the app is live in the App Store, widgets are available
-              immediately. You can add multiple widget sizes — small (time only),
-              medium (time + verse), and large (full verse).
+              Када апликација буде доступна у App Store-у, виџети су одмах
+              доступни. Можеш додати виџете различитих величина — мали (само
+              сат), средњи (сат + стих) и велики (цео стих).
             </Text>
           </View>
         </View>
