@@ -108,6 +108,11 @@ export default function HomeScreen() {
     router.push("/widget-info");
   }, []);
 
+  const handleViewVerses = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push("/verses");
+  }, []);
+
   const verse = BIBLE_VERSES[verseIndex];
   const widgetVerse = BIBLE_VERSES[widgetVerseIndex];
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
@@ -172,9 +177,28 @@ export default function HomeScreen() {
           contentContainerStyle={styles.verseScrollContent}
           showsVerticalScrollIndicator={false}
         >
+          <View style={[styles.verseCard, styles.widgetVerseCard]}>
+            <View style={styles.verseLabelRow}>
+              <FontAwesome5
+                name="bible"
+                size={13}
+                color={Colors.gold}
+                style={{ marginRight: 7 }}
+              />
+              <Text style={styles.verseLabelText}>СТИХ ДАНА</Text>
+            </View>
+
+            <Text style={styles.verseText}>
+              {"\u201E"}
+              {widgetVerse.text}
+              {"\u201C"}
+            </Text>
+            <Text style={styles.refText}>{widgetVerse.ref}</Text>
+          </View>
+
           <Pressable
-            onPress={handleRefreshVerse}
-            accessibilityLabel="Следећи стих"
+            onPress={handleViewVerses}
+            accessibilityLabel="Погледај све стихове"
             accessibilityRole="button"
           >
             <Animated.View style={[styles.verseCard, { opacity: fadeAnim }]}>
@@ -212,25 +236,6 @@ export default function HomeScreen() {
               <Text style={styles.refText}>{verse.ref}</Text>
             </Animated.View>
           </Pressable>
-
-          <View style={[styles.verseCard, styles.widgetVerseCard]}>
-            <View style={styles.verseLabelRow}>
-              <FontAwesome5
-                name="bible"
-                size={13}
-                color={Colors.gold}
-                style={{ marginRight: 7 }}
-              />
-              <Text style={styles.verseLabelText}>СТИХ ДАНА</Text>
-            </View>
-
-            <Text style={styles.verseText}>
-              {"\u201E"}
-              {widgetVerse.text}
-              {"\u201C"}
-            </Text>
-            <Text style={styles.refText}>{widgetVerse.ref}</Text>
-          </View>
         </ScrollView>
       </View>
     </View>
