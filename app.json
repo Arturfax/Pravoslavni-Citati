@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Pravoslvni Citati",
-    "slug": "pravoslvnicitati",
+    "name": "Pravoslavni Citati",
+    "slug": "pravoslavnicitati",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "pravoslvnicitati",
+    "scheme": "pravoslavnicitati",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
@@ -15,10 +15,10 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.pravoslvnicitati.app"
+      "bundleIdentifier": "com.pravoslavnicitati.app"
     },
     "android": {
-      "package": "com.pravoslvnicitati.app",
+      "package": "com.pravoslavnicitati.app",
       "adaptiveIcon": {
         "backgroundColor": "#080C18",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

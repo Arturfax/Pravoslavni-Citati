@@ -15,24 +15,24 @@ import Colors from "@/constants/colors";
 
 const STEPS = [
   {
-    icon: "construct-outline" as const,
-    title: "Направи апликацију",
-    desc: "Виџети за закључани екран захтевају нативни iOS build преко Expo EAS (Expo Application Services). Кроз Expo Go није могуће додати виџете — потребан је standalone build.",
-  },
-  {
-    icon: "cloud-upload-outline" as const,
-    title: "Публикуј преко EAS Build",
-    desc: "Покрени `eas build --platform ios` да направиш production .ipa фајл. Ово пакује апликацију са нативним iOS widget екстензијама (WidgetKit).",
-  },
-  {
-    icon: "phone-portrait-outline" as const,
-    title: "Инсталирај на iPhone",
-    desc: "Инсталирај апликацију из App Store-а или преко TestFlight-а. Када је апликација нативно инсталирана, iPhone ће препознати виџет.",
-  },
-  {
     icon: "lock-closed-outline" as const,
-    title: "Додај на закључани екран",
-    desc: "Дуго притисни закључани екран → тапни Прилагоди → тапни на простор за виџете → тапни Додај виџете → пронађи Библијски сат и додај га. Виџет ће приказивати тренутно време и дневни стих.",
+    title: "Отвори закључани екран",
+    desc: "Закључај телефон, а затим дуго притисни на закључани екран док се не појави опција за прилагођавање.",
+  },
+  {
+    icon: "color-palette-outline" as const,
+    title: "Прилагоди екран",
+    desc: "Тапни на „Прилагоди" на дну екрана, а затим изабери „Закључани екран".",
+  },
+  {
+    icon: "add-circle-outline" as const,
+    title: "Додај виџет",
+    desc: "Тапни на простор за виџете испод сата → тапни „Додај виџете" → пронађи „Православни Цитати" на листи и изабери жељену величину.",
+  },
+  {
+    icon: "checkmark-circle-outline" as const,
+    title: "Потврди избор",
+    desc: "Тапни „Готово" у горњем десном углу. Виџет ће приказивати дневни библијски стих који се мења сваког дана.",
   },
 ];
 
@@ -44,7 +44,7 @@ export default function WidgetInfoScreen() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={["#0D1225", "#070B16", "#040710"]}
+        colors={Colors.gradientAlt}
         style={StyleSheet.absoluteFill}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
@@ -58,6 +58,8 @@ export default function WidgetInfoScreen() {
             { opacity: pressed ? 0.6 : 1 },
           ]}
           hitSlop={12}
+          accessibilityLabel="Назад"
+          accessibilityRole="button"
         >
           <Ionicons name="chevron-down" size={26} color={Colors.gold} />
         </Pressable>
@@ -92,8 +94,8 @@ export default function WidgetInfoScreen() {
             style={{ marginRight: 10, marginTop: 1 }}
           />
           <Text style={styles.noteText}>
-            iOS виџети за закључани екран захтевају нативни build апликације.
-            Прати ове кораке да добијеш виџет на свом уређају.
+            Прати ове једноставне кораке да додаш виџет са дневним стихом на
+            свој закључани екран.
           </Text>
         </View>
 
@@ -129,9 +131,9 @@ export default function WidgetInfoScreen() {
           <View style={{ flex: 1 }}>
             <Text style={styles.tipTitle}>Корисни савет</Text>
             <Text style={styles.tipText}>
-              Када апликација буде доступна у App Store-у, виџети су одмах
-              доступни. Можеш додати виџете различитих величина — мали (само
-              сат), средњи (сат + стих) и велики (цео стих).
+              Можеш додати виџете различитих величина — мали (само сат), средњи
+              (сат + стих) и велики (цео стих). Стих се аутоматски мења сваког
+              дана.
             </Text>
           </View>
         </View>
@@ -143,7 +145,7 @@ export default function WidgetInfoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#040710",
+    backgroundColor: Colors.containerBg,
   },
   header: {
     flexDirection: "row",
@@ -161,7 +163,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 17,
     fontFamily: "Inter_600SemiBold",
-    color: "#F0EAD6",
+    color: Colors.textPrimary,
     letterSpacing: 0.2,
   },
   scroll: {
@@ -180,9 +182,9 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: "rgba(201, 168, 76, 0.12)",
+    backgroundColor: Colors.cardBorderSubtle,
     borderWidth: 1,
-    borderColor: "rgba(201, 168, 76, 0.25)",
+    borderColor: Colors.goldOverlayStrong,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 18,
@@ -190,22 +192,22 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 24,
     fontFamily: "Inter_700Bold",
-    color: "#F0EAD6",
+    color: Colors.textPrimary,
     textAlign: "center",
     marginBottom: 10,
   },
   heroSubtitle: {
     fontSize: 16,
     fontFamily: "Inter_400Regular",
-    color: "rgba(240, 234, 214, 0.6)",
+    color: Colors.textMuted,
     textAlign: "center",
     lineHeight: 24,
   },
   noteCard: {
-    backgroundColor: "rgba(201, 168, 76, 0.08)",
+    backgroundColor: Colors.goldOverlay,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "rgba(201, 168, 76, 0.2)",
+    borderColor: Colors.cardBorder,
     padding: 14,
     flexDirection: "row",
     alignItems: "flex-start",
@@ -215,16 +217,16 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontFamily: "Inter_400Regular",
-    color: "rgba(240, 234, 214, 0.75)",
+    color: Colors.textLight,
     lineHeight: 21,
   },
   stepCard: {
     flexDirection: "row",
     marginBottom: 16,
-    backgroundColor: "rgba(15, 22, 38, 0.8)",
+    backgroundColor: Colors.cardBgSubtle,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "rgba(201, 168, 76, 0.12)",
+    borderColor: Colors.cardBorderSubtle,
     padding: 16,
     gap: 14,
   },
@@ -232,7 +234,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: "rgba(201, 168, 76, 0.15)",
+    backgroundColor: Colors.goldOverlayMedium,
     borderWidth: 1,
     borderColor: "rgba(201, 168, 76, 0.3)",
     alignItems: "center",
@@ -256,26 +258,26 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 16,
     fontFamily: "Inter_600SemiBold",
-    color: "#F0EAD6",
+    color: Colors.textPrimary,
   },
   stepDesc: {
     fontSize: 14,
     fontFamily: "Inter_400Regular",
-    color: "rgba(240, 234, 214, 0.65)",
+    color: Colors.textSoft,
     lineHeight: 21,
   },
   divider: {
     height: 1,
-    backgroundColor: "rgba(201, 168, 76, 0.12)",
+    backgroundColor: Colors.cardBorderSubtle,
     marginVertical: 20,
   },
   tipCard: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "rgba(15, 22, 38, 0.7)",
+    backgroundColor: Colors.cardBgFaint,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "rgba(201, 168, 76, 0.12)",
+    borderColor: Colors.cardBorderSubtle,
     padding: 16,
   },
   tipTitle: {
@@ -287,7 +289,7 @@ const styles = StyleSheet.create({
   tipText: {
     fontSize: 14,
     fontFamily: "Inter_400Regular",
-    color: "rgba(240, 234, 214, 0.65)",
+    color: Colors.textSoft,
     lineHeight: 21,
   },
 });
