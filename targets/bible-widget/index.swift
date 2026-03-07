@@ -34,6 +34,18 @@ private let verses: [BibleVerse] = [
     BibleVerse(text: "Будите добри и милосрдни међу собом, праштајте један другоме, као што је и Бог у Христу опростио вама.", ref: "Ефесцима 4:32"),
     BibleVerse(text: "Господ благословио тебе и сачувао те; Господ осветлио лице Своје на тебе и помиловао те.", ref: "Бројеви 6:24-25"),
     BibleVerse(text: "Не бој се, јер сам Ја с тобом; не плаши се, јер Ја сам Бог твој; ојачао сам те и помогао ти.", ref: "Исаија 41:10"),
+    BibleVerse(text: "Свете књиге читај целим својим срцем јер ћеш из њих научити задобијање врлина и твоја душа ће бити испуњена радошћу и весељем.", ref: "Св. Ефрем Синајски"),
+    BibleVerse(text: "Границе између православља и јереси су исписане крвљу.", ref: "Старац Јероним Светогорац"),
+    BibleVerse(text: "Вера је једини благословени темељ живота личног и живота друштвеног и уређења државног.", ref: "Св. Николај Жички"),
+    BibleVerse(text: "Слобода која искључује сваку могућност да погазимо добро – јесте савршена и Божанска.", ref: "Св. Филарет Московски"),
+    BibleVerse(text: "Ни један пријатељ злата никад није постао пријатељ Христа или људи.", ref: "Св. Јован Златоусти"),
+    BibleVerse(text: "Исправна вера не користи ништа ако је живот искварен.", ref: "Св. Јован Златоусти"),
+    BibleVerse(text: "Када је труд на нашој страни одсутан тада и Божија помоћ престаје.", ref: "Св. Јован Златоусти"),
+    BibleVerse(text: "Не напуштај вољу Божију да би испунио вољу људи.", ref: "Преп. Антоније Велики"),
+    BibleVerse(text: "Мала знања добијају се учењем, велика знања добијају се вером и поштењем.", ref: "Св. Николај Жички"),
+    BibleVerse(text: "Када би било корисно знати будућност, онда то Бог не би сакрио од нас.", ref: "Св. Јован Златоусти"),
+    BibleVerse(text: "Направи твој дом Црквом, јер ти ћеш одговарати за душе твоје деце и свих оних који обитавају у њему.", ref: "Св. Јован Златоусти"),
+    BibleVerse(text: "Никада не ради ништа нечасно, макар се то многима допада, и не напуштај добро дело, макар да је оно мрско блуднима.", ref: "Св. Григорије Богослов"),
 ]
 
 private func dailyVerse() -> BibleVerse {
@@ -69,8 +81,15 @@ struct VerseProvider: TimelineProvider {
 
 // MARK: - Colors
 
-private let darkBg  = Color(red: 4/255,   green: 7/255,   blue: 16/255)
-private let gold    = Color(red: 201/255, green: 168/255, blue: 76/255)
+private let darkBg      = Color(red: 4/255,   green: 7/255,   blue: 16/255)
+private let darkNavy    = Color(red: 10/255,  green: 15/255,  blue: 30/255)
+private let gold        = Color(red: 201/255, green: 168/255, blue: 76/255)
+
+private let bgGradient = LinearGradient(
+    colors: [darkNavy, darkBg],
+    startPoint: .top,
+    endPoint: .bottom
+)
 
 // MARK: - Views
 
@@ -89,12 +108,17 @@ struct VerseWidgetView: View {
                 .lineLimit(family == .systemSmall ? 7 : 15)
                 .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
 
+            Rectangle()
+                .fill(gold.opacity(0.4))
+                .frame(width: 30, height: 1)
+
             Text(entry.verse.ref)
                 .font(.system(size: refSize, weight: .semibold))
                 .foregroundStyle(gold)
                 .multilineTextAlignment(.center)
                 .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(padding)
     }
 
@@ -135,10 +159,12 @@ struct BibleWidget: Widget {
                     .glassEffect(.regular, in: .containerRelative)
             } else if #available(iOS 17.0, *) {
                 VerseWidgetView(entry: entry)
-                    .containerBackground(darkBg, for: .widget)
+                    .containerBackground(for: .widget) {
+                        bgGradient
+                    }
             } else {
                 ZStack {
-                    darkBg
+                    bgGradient
                     VerseWidgetView(entry: entry)
                 }
             }
