@@ -15,7 +15,10 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.pravoslavnicitati.app"
+      "bundleIdentifier": "com.pravoslavnicitati.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.pravoslavnicitati.app",
@@ -41,13 +44,21 @@
       [
         "@bacons/apple-targets",
         {
-          "appleTeamId": "XXXXXXXXXX"
+          "appleTeamId": "9C2NZ9WDK3"
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {
+        "origin": "https://replit.com/"
+      },
+      "eas": {
+        "projectId": "192a18b2-6c2a-420e-ba07-4154e74f3513"
+      }
     }
   }
 }
