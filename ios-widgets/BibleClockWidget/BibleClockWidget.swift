@@ -62,7 +62,6 @@ struct BibleClockProvider: TimelineProvider {
         var entries: [BibleClockEntry] = []
         let currentDate = Date()
 
-        // One entry per minute for the next 60 minutes
         for offset in 0..<60 {
             guard let entryDate = Calendar.current.date(byAdding: .minute, value: offset, to: currentDate) else { continue }
             let v = getVerse(for: entryDate)
@@ -70,69 +69,26 @@ struct BibleClockProvider: TimelineProvider {
         }
 
         let refreshDate = Calendar.current.date(byAdding: .hour, value: 1, to: currentDate) ?? currentDate
-        let timeline = Timeline(entries: entries, policy: .after(refreshDate))
-        completion(timeline)
+        completion(Timeline(entries: entries, policy: .after(refreshDate)))
     }
 }
 
-// MARK: - Colors
-
-private let navy = Color(red: 0.04, green: 0.05, blue: 0.09)
-private let cream = Color(red: 0.94, green: 0.92, blue: 0.84)
-private let gold = Color(red: 0.79, green: 0.66, blue: 0.30)
-private let creamFaded = Color(red: 0.94, green: 0.92, blue: 0.84).opacity(0.75)
-
-// MARK: - Time Formatter
+// MARK: - Shared helpers
 
 private func timeString(from date: Date) -> String {
-    let formatter = DateFormatter()
-    formatter.dateFormat = "HH:mm"
-    return formatter.string(from: date)
+    let f = DateFormatter()
+    f.dateFormat = "HH:mm"
+    return f.string(from: date)
 }
 
-// MARK: - Widget Views
+private let navy   = Color(red: 0.04, green: 0.05, blue: 0.09)
+private let cream  = Color(red: 0.94, green: 0.92, blue: 0.84)
+private let gold   = Color(red: 0.79, green: 0.66, blue: 0.30)
+private let creamDim = Color(red: 0.94, green: 0.92, blue: 0.84).opacity(0.78)
 
-struct AccessoryInlineView: View {
-    let entry: BibleClockEntry
-    var body: some View {
-        Text("\(timeString(from: entry.date))  \(entry.verseRef)")
-            .font(.system(size: 12, weight: .medium))
-    }
-}
+// MARK: - Home Screen Widget Views
 
-struct AccessoryRectangularView: View {
-    let entry: BibleClockEntry
-    var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            HStack(spacing: 6) {
-                Image(systemName: "cross.fill")
-                    .font(.system(size: 10, weight: .semibold))
-                Text(timeString(from: entry.date))
-                    .font(.system(size: 17, weight: .bold, design: .rounded))
-            }
-            Text(entry.verseText)
-                .font(.system(size: 11))
-                .lineLimit(2)
-            Text(entry.verseRef)
-                .font(.system(size: 10, weight: .semibold))
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}
-
-struct AccessoryCircularView: View {
-    let entry: BibleClockEntry
-    var body: some View {
-        VStack(spacing: 1) {
-            Image(systemName: "cross.fill")
-                .font(.system(size: 10, weight: .bold))
-            Text(timeString(from: entry.date))
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-        }
-    }
-}
-
-struct SystemSmallView: View {
+struct HomeSmallView: View {
     let entry: BibleClockEntry
     var body: some View {
         ZStack {
@@ -148,13 +104,14 @@ struct SystemSmallView: View {
                 Text(entry.verseRef)
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(gold)
+                    .multilineTextAlignment(.center)
             }
             .padding(12)
         }
     }
 }
 
-struct SystemMediumView: View {
+struct HomeMediumView: View {
     let entry: BibleClockEntry
     var body: some View {
         ZStack {
@@ -175,14 +132,14 @@ struct SystemMediumView: View {
                 .frame(maxWidth: 110)
 
                 Rectangle()
-                    .fill(gold.opacity(0.25))
+                    .fill(gold.opacity(0.3))
                     .frame(width: 1)
                     .padding(.vertical, 8)
 
                 Text("„\(entry.verseText)"")
                     .font(.system(size: 12))
                     .italic()
-                    .foregroundColor(creamFaded)
+                    .foregroundColor(creamDim)
                     .lineLimit(6)
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -192,7 +149,7 @@ struct SystemMediumView: View {
     }
 }
 
-struct SystemLargeView: View {
+struct HomeLargeView: View {
     let entry: BibleClockEntry
     var body: some View {
         ZStack {
@@ -218,7 +175,7 @@ struct SystemLargeView: View {
                 Text("„\(entry.verseText)"")
                     .font(.system(size: 16))
                     .italic()
-                    .foregroundColor(creamFaded)
+                    .foregroundColor(creamDim)
                     .multilineTextAlignment(.center)
                     .lineSpacing(5)
                     .padding(.horizontal, 20)
@@ -234,49 +191,115 @@ struct SystemLargeView: View {
     }
 }
 
-// MARK: - Entry View
+// MARK: - Home Screen Widget Entry View
 
-struct BibleClockWidgetEntryView: View {
-    var entry: BibleClockProvider.Entry
+struct HomeWidgetEntryView: View {
+    var entry: BibleClockEntry
     @Environment(\.widgetFamily) var family
 
     var body: some View {
         switch family {
-        case .accessoryInline:
-            AccessoryInlineView(entry: entry)
-        case .accessoryRectangular:
-            AccessoryRectangularView(entry: entry)
-        case .accessoryCircular:
-            AccessoryCircularView(entry: entry)
-        case .systemSmall:
-            SystemSmallView(entry: entry)
-        case .systemMedium:
-            SystemMediumView(entry: entry)
-        case .systemLarge:
-            SystemLargeView(entry: entry)
-        default:
-            SystemSmallView(entry: entry)
+        case .systemSmall:  HomeSmallView(entry: entry)
+        case .systemMedium: HomeMediumView(entry: entry)
+        case .systemLarge:  HomeLargeView(entry: entry)
+        default:            HomeSmallView(entry: entry)
         }
     }
 }
 
-// MARK: - Widget Configuration
+// MARK: - Lock Screen Widget Views
 
-@main
-struct BibleClockWidget: Widget {
-    let kind: String = "BibleClockWidget"
+/// Inline: thin single line at the very top of the lock screen
+struct LockInlineView: View {
+    let entry: BibleClockEntry
+    var body: some View {
+        Text("\(timeString(from: entry.date))  \(entry.verseRef)")
+            .font(.system(size: 12, weight: .medium))
+    }
+}
+
+/// Rectangular: wide bar below the clock — best for showing the verse
+struct LockRectangularView: View {
+    let entry: BibleClockEntry
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 5) {
+                Image(systemName: "cross.fill")
+                    .font(.system(size: 9, weight: .bold))
+                Text(entry.verseRef)
+                    .font(.system(size: 11, weight: .bold))
+            }
+            Text(entry.verseText)
+                .font(.system(size: 11))
+                .lineLimit(2)
+                .truncationMode(.tail)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// Circular: small circle in the corners of the lock screen
+struct LockCircularView: View {
+    let entry: BibleClockEntry
+    var body: some View {
+        ZStack {
+            AccessoryWidgetBackground()
+            VStack(spacing: 1) {
+                Image(systemName: "cross.fill")
+                    .font(.system(size: 9, weight: .bold))
+                Text(timeString(from: entry.date))
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .minimumScaleFactor(0.8)
+            }
+        }
+    }
+}
+
+// MARK: - Lock Screen Widget Entry View
+
+struct LockWidgetEntryView: View {
+    var entry: BibleClockEntry
+    @Environment(\.widgetFamily) var family
+
+    var body: some View {
+        switch family {
+        case .accessoryInline:      LockInlineView(entry: entry)
+        case .accessoryRectangular: LockRectangularView(entry: entry)
+        case .accessoryCircular:    LockCircularView(entry: entry)
+        default:                    LockRectangularView(entry: entry)
+        }
+    }
+}
+
+// MARK: - Widget Configurations
+
+/// Home screen widget (small / medium / large)
+struct BibleClockHomeWidget: Widget {
+    let kind: String = "BibleClockHomeWidget"
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: BibleClockProvider()) { entry in
-            BibleClockWidgetEntryView(entry: entry)
+            HomeWidgetEntryView(entry: entry)
                 .containerBackground(navy, for: .widget)
         }
         .configurationDisplayName("Библијски сат")
         .description("Тренутно време и дневни православни стих.")
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+    }
+}
+
+/// Lock screen widget (inline / rectangular / circular)
+struct BibleClockLockWidget: Widget {
+    let kind: String = "BibleClockLockWidget"
+
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: kind, provider: BibleClockProvider()) { entry in
+            LockWidgetEntryView(entry: entry)
+                .containerBackground(.widgetBackground, for: .widget)
+        }
+        .configurationDisplayName("Стих дана — закључани екран")
+        .description("Дневни православни стих на закључаном екрану.")
         .supportedFamilies([
-            .systemSmall,
-            .systemMedium,
-            .systemLarge,
             .accessoryInline,
             .accessoryRectangular,
             .accessoryCircular
@@ -284,14 +307,12 @@ struct BibleClockWidget: Widget {
     }
 }
 
-// MARK: - Preview
+// MARK: - Bundle (combines both widgets)
 
-#Preview(as: .systemMedium) {
-    BibleClockWidget()
-} timeline: {
-    BibleClockEntry(
-        date: .now,
-        verseText: "Господ је светлост моја и спасење моје, кога ћу се бојати?",
-        verseRef: "Псалм 27:1"
-    )
+@main
+struct BibleClockWidgetBundle: WidgetBundle {
+    var body: some Widget {
+        BibleClockHomeWidget()
+        BibleClockLockWidget()
+    }
 }
