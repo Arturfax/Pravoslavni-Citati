@@ -132,7 +132,7 @@ struct BibleWidget: Widget {
             if #available(iOS 26.0, *) {
                 VerseWidgetView(entry: entry)
                     .containerBackground(.clear, for: .widget)
-                    .glassEffect(in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .glassEffect(.regular, in: .containerRelative)
             } else if #available(iOS 17.0, *) {
                 VerseWidgetView(entry: entry)
                     .containerBackground(darkBg, for: .widget)
