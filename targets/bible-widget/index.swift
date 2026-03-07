@@ -447,7 +447,7 @@ struct BibleLockWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: BibleVerseProvider()) { entry in
             LockWidgetEntryView(entry: entry)
-                .containerBackground(.widgetBackground, for: .widget)
+                .containerBackground(.clear, for: .widget)
         }
         .configurationDisplayName("Стих дана — закључани екран")
         .description("Дневни православни стих на закључаном екрану.")
