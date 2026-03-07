@@ -41,12 +41,7 @@
       ],
       "expo-font",
       "expo-web-browser",
-      [
-        "@bacons/apple-targets",
-        {
-          "appleTeamId": "9C2NZ9WDK3"
-        }
-      ]
+      "./plugins/withBibleClockWidget"
     ],
     "experiments": {
       "typedRoutes": true,
