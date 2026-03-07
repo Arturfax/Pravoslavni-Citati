@@ -135,7 +135,7 @@ struct BibleWidget: Widget {
                     .glassEffect(in: RoundedRectangle(cornerRadius: 20, style: .continuous))
             } else if #available(iOS 17.0, *) {
                 VerseWidgetView(entry: entry)
-                    .containerBackground(.clear, for: .widget)
+                    .containerBackground(darkBg, for: .widget)
             } else {
                 ZStack {
                     darkBg
