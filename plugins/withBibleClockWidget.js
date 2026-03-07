@@ -104,8 +104,10 @@ function withWidgetXcodeTarget(config) {
         Object.assign(cfg.buildSettings, {
           ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: "NO",
           CLANG_ENABLE_MODULES: "YES",
+          CODE_SIGN_ENTITLEMENTS: `"${WIDGET_TARGET_NAME}/${WIDGET_TARGET_NAME}.entitlements"`,
+          DEVELOPMENT_TEAM: "9C2NZ9WDK3",
           INFOPLIST_FILE: `"${WIDGET_TARGET_NAME}/Info.plist"`,
-          IPHONEOS_DEPLOYMENT_TARGET: "16.0",
+          IPHONEOS_DEPLOYMENT_TARGET: "17.0",
           LD_RUNPATH_SEARCH_PATHS: '"$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"',
           MARKETING_VERSION: "1.0.0",
           CURRENT_PROJECT_VERSION: "1",
@@ -117,6 +119,36 @@ function withWidgetXcodeTarget(config) {
           TARGETED_DEVICE_FAMILY: '"1,2"',
         });
       }
+    }
+
+    // ---- Embed widget extension in main app ----
+    // Find the main app target
+    const nativeTargets = xcodeProject.pbxNativeTargetSection();
+    let mainTargetUuid = null;
+    for (const [uuid, target] of Object.entries(nativeTargets)) {
+      if (
+        target &&
+        typeof target === "object" &&
+        target.productType === '"com.apple.product-type.application"'
+      ) {
+        mainTargetUuid = uuid;
+        break;
+      }
+    }
+
+    if (mainTargetUuid) {
+      // Add widget target as a dependency of the main app target
+      xcodeProject.addTargetDependency(mainTargetUuid, [widgetTarget.uuid]);
+
+      // Add "Embed App Extensions" copy-files build phase to the main target
+      // dstSubfolderSpec 13 = PlugIns (where app extensions go)
+      xcodeProject.addBuildPhase(
+        [`${WIDGET_TARGET_NAME}.appex`],
+        "PBXCopyFilesBuildPhase",
+        "Embed App Extensions",
+        mainTargetUuid,
+        "app_extension"
+      );
     }
 
     return config;
