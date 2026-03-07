@@ -45,7 +45,7 @@ struct BibleClockEntry: TimelineEntry {
     let verseRef: String
 }
 
-// MARK: - Timeline Provider
+// MARK: - Timeline Provider (updates daily at midnight)
 
 struct BibleClockProvider: TimelineProvider {
     func placeholder(in context: Context) -> BibleClockEntry {
@@ -59,52 +59,50 @@ struct BibleClockProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<BibleClockEntry>) -> Void) {
-        var entries: [BibleClockEntry] = []
-        let currentDate = Date()
+        let now = Date()
+        let v = getVerse(for: now)
+        let entry = BibleClockEntry(date: now, verseText: v.text, verseRef: v.ref)
 
-        for offset in 0..<60 {
-            guard let entryDate = Calendar.current.date(byAdding: .minute, value: offset, to: currentDate) else { continue }
-            let v = getVerse(for: entryDate)
-            entries.append(BibleClockEntry(date: entryDate, verseText: v.text, verseRef: v.ref))
-        }
+        // Refresh at next midnight so verse changes each day
+        var components = Calendar.current.dateComponents([.year, .month, .day], from: now)
+        components.day! += 1
+        components.hour = 0
+        components.minute = 0
+        components.second = 0
+        let nextMidnight = Calendar.current.date(from: components) ?? now
 
-        let refreshDate = Calendar.current.date(byAdding: .hour, value: 1, to: currentDate) ?? currentDate
-        completion(Timeline(entries: entries, policy: .after(refreshDate)))
+        let timeline = Timeline(entries: [entry], policy: .after(nextMidnight))
+        completion(timeline)
     }
 }
 
-// MARK: - Shared helpers
+// MARK: - Colors
 
-private func timeString(from date: Date) -> String {
-    let f = DateFormatter()
-    f.dateFormat = "HH:mm"
-    return f.string(from: date)
-}
+private let navy    = Color(red: 0.04, green: 0.05, blue: 0.09)
+private let cream   = Color(red: 0.94, green: 0.92, blue: 0.84)
+private let gold    = Color(red: 0.79, green: 0.66, blue: 0.30)
+private let creamDim = Color(red: 0.94, green: 0.92, blue: 0.84).opacity(0.80)
 
-private let navy   = Color(red: 0.04, green: 0.05, blue: 0.09)
-private let cream  = Color(red: 0.94, green: 0.92, blue: 0.84)
-private let gold   = Color(red: 0.79, green: 0.66, blue: 0.30)
-private let creamDim = Color(red: 0.94, green: 0.92, blue: 0.84).opacity(0.78)
-
-// MARK: - Home Screen Widget Views
+// MARK: - Home Screen Views (only verse, no time)
 
 struct HomeSmallView: View {
     let entry: BibleClockEntry
     var body: some View {
         ZStack {
             navy
-            VStack(spacing: 6) {
+            VStack(spacing: 10) {
                 Image(systemName: "cross.fill")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(gold)
-                Text(timeString(from: entry.date))
-                    .font(.system(size: 44, weight: .bold, design: .rounded))
+                Text("„\(entry.verseText)"")
+                    .font(.system(size: 11))
+                    .italic()
                     .foregroundColor(cream)
-                    .minimumScaleFactor(0.7)
-                Text(entry.verseRef)
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(gold)
                     .multilineTextAlignment(.center)
+                    .lineLimit(5)
+                Text(entry.verseRef)
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundColor(gold)
             }
             .padding(12)
         }
@@ -116,35 +114,27 @@ struct HomeMediumView: View {
     var body: some View {
         ZStack {
             navy
-            HStack(spacing: 14) {
-                VStack(spacing: 6) {
+            VStack(spacing: 10) {
+                HStack(spacing: 6) {
                     Image(systemName: "cross.fill")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(gold)
-                    Text(timeString(from: entry.date))
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
-                        .foregroundColor(cream)
-                    Text(entry.verseRef)
+                    Text("СТИХ ДАНА")
                         .font(.system(size: 10, weight: .semibold))
+                        .kerning(1.4)
                         .foregroundColor(gold)
-                        .multilineTextAlignment(.center)
                 }
-                .frame(maxWidth: 110)
-
-                Rectangle()
-                    .fill(gold.opacity(0.3))
-                    .frame(width: 1)
-                    .padding(.vertical, 8)
-
                 Text("„\(entry.verseText)"")
-                    .font(.system(size: 12))
+                    .font(.system(size: 13))
                     .italic()
-                    .foregroundColor(creamDim)
-                    .lineLimit(6)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundColor(cream)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(4)
+                Text(entry.verseRef)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(gold)
             }
-            .padding(14)
+            .padding(16)
         }
     }
 }
@@ -155,70 +145,45 @@ struct HomeLargeView: View {
         ZStack {
             navy
             VStack(spacing: 0) {
-                VStack(spacing: 4) {
-                    Image(systemName: "cross.fill")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(gold)
-                        .padding(.bottom, 4)
-                    Text(timeString(from: entry.date))
-                        .font(.system(size: 64, weight: .bold, design: .rounded))
-                        .foregroundColor(cream)
-                }
-                .padding(.top, 18)
-
-                Rectangle()
-                    .fill(gold.opacity(0.25))
-                    .frame(height: 1)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 16)
+                Spacer()
+                Image(systemName: "cross.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(gold)
+                    .padding(.bottom, 16)
 
                 Text("„\(entry.verseText)"")
-                    .font(.system(size: 16))
+                    .font(.system(size: 17))
                     .italic()
-                    .foregroundColor(creamDim)
+                    .foregroundColor(cream)
                     .multilineTextAlignment(.center)
-                    .lineSpacing(5)
+                    .lineSpacing(6)
                     .padding(.horizontal, 20)
 
-                Spacer()
+                Rectangle()
+                    .fill(gold.opacity(0.3))
+                    .frame(height: 1)
+                    .padding(.horizontal, 32)
+                    .padding(.vertical, 18)
 
                 Text(entry.verseRef)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(gold)
-                    .padding(.bottom, 18)
+                Spacer()
             }
         }
     }
 }
 
-// MARK: - Home Screen Widget Entry View
+// MARK: - Lock Screen Views (only verse, no time)
 
-struct HomeWidgetEntryView: View {
-    var entry: BibleClockEntry
-    @Environment(\.widgetFamily) var family
-
-    var body: some View {
-        switch family {
-        case .systemSmall:  HomeSmallView(entry: entry)
-        case .systemMedium: HomeMediumView(entry: entry)
-        case .systemLarge:  HomeLargeView(entry: entry)
-        default:            HomeSmallView(entry: entry)
-        }
-    }
-}
-
-// MARK: - Lock Screen Widget Views
-
-/// Inline: thin single line at the very top of the lock screen
 struct LockInlineView: View {
     let entry: BibleClockEntry
     var body: some View {
-        Text("\(timeString(from: entry.date))  \(entry.verseRef)")
+        Text("✝ \(entry.verseRef)")
             .font(.system(size: 12, weight: .medium))
     }
 }
 
-/// Rectangular: wide bar below the clock — best for showing the verse
 struct LockRectangularView: View {
     let entry: BibleClockEntry
     var body: some View {
@@ -238,24 +203,40 @@ struct LockRectangularView: View {
     }
 }
 
-/// Circular: small circle in the corners of the lock screen
 struct LockCircularView: View {
     let entry: BibleClockEntry
     var body: some View {
         ZStack {
             AccessoryWidgetBackground()
-            VStack(spacing: 1) {
+            VStack(spacing: 2) {
                 Image(systemName: "cross.fill")
-                    .font(.system(size: 9, weight: .bold))
-                Text(timeString(from: entry.date))
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
-                    .minimumScaleFactor(0.8)
+                    .font(.system(size: 11, weight: .bold))
+                Text(entry.verseRef)
+                    .font(.system(size: 8, weight: .semibold))
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.7)
             }
+            .padding(4)
         }
     }
 }
 
-// MARK: - Lock Screen Widget Entry View
+// MARK: - Entry Views
+
+struct HomeWidgetEntryView: View {
+    var entry: BibleClockEntry
+    @Environment(\.widgetFamily) var family
+
+    var body: some View {
+        switch family {
+        case .systemSmall:  HomeSmallView(entry: entry)
+        case .systemMedium: HomeMediumView(entry: entry)
+        case .systemLarge:  HomeLargeView(entry: entry)
+        default:            HomeSmallView(entry: entry)
+        }
+    }
+}
 
 struct LockWidgetEntryView: View {
     var entry: BibleClockEntry
@@ -273,7 +254,6 @@ struct LockWidgetEntryView: View {
 
 // MARK: - Widget Configurations
 
-/// Home screen widget (small / medium / large)
 struct BibleClockHomeWidget: Widget {
     let kind: String = "BibleClockHomeWidget"
 
@@ -282,13 +262,12 @@ struct BibleClockHomeWidget: Widget {
             HomeWidgetEntryView(entry: entry)
                 .containerBackground(navy, for: .widget)
         }
-        .configurationDisplayName("Библијски сат")
-        .description("Тренутно време и дневни православни стих.")
+        .configurationDisplayName("Стих дана")
+        .description("Дневни православни стих.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
 
-/// Lock screen widget (inline / rectangular / circular)
 struct BibleClockLockWidget: Widget {
     let kind: String = "BibleClockLockWidget"
 
@@ -307,7 +286,7 @@ struct BibleClockLockWidget: Widget {
     }
 }
 
-// MARK: - Bundle (combines both widgets)
+// MARK: - Bundle
 
 @main
 struct BibleClockWidgetBundle: WidgetBundle {
