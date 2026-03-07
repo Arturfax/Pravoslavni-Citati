@@ -133,7 +133,10 @@ export default function HomeScreen() {
         ]}
       >
         <View style={styles.topRow}>
-          <View style={styles.crossContainer} accessibilityLabel="Православни Цитати">
+          <View
+            style={styles.crossContainer}
+            accessibilityLabel="Православни Цитати"
+          >
             <FontAwesome5 name="cross" size={18} color={Colors.gold} />
           </View>
           <Pressable
@@ -146,7 +149,11 @@ export default function HomeScreen() {
             accessibilityLabel="Информације о виџету"
             accessibilityRole="button"
           >
-            <Ionicons name="add-circle-outline" size={26} color={Colors.gold} />
+            <Ionicons
+              name="information-circle-outline"
+              size={26}
+              color={Colors.gold}
+            />
           </Pressable>
         </View>
 
