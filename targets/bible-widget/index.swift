@@ -215,7 +215,14 @@ private let verses: [(text: String, ref: String)] = [
     ("Нико нема веће љубави од ове: да ко положи живот свој за пријатеље своје.", "Јован 15:13"),
 ]
 
+private let appGroupId = "group.com.pravoslavnicitati.app"
+
 private func getVerse(for date: Date) -> (text: String, ref: String) {
+    let defaults = UserDefaults(suiteName: appGroupId)
+    if defaults?.bool(forKey: "hasPinnedVerse") == true {
+        let index = defaults?.integer(forKey: "selectedVerseIndex") ?? 0
+        return verses[index % verses.count]
+    }
     let calendar = Calendar.current
     let dayOfYear = calendar.ordinality(of: .day, in: .year, for: date) ?? 1
     return verses[(dayOfYear - 1) % verses.count]

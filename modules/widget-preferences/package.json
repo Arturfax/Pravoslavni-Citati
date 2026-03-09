@@ -1,0 +1,6 @@
+{
+  "name": "widget-preferences",
+  "version": "1.0.0",
+  "description": "Native module for pinning a verse to the iOS widget",
+  "main": "index"
+}

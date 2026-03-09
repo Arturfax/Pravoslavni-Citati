@@ -13,9 +13,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import Colors from "@/constants/colors";
 import { BIBLE_VERSES } from "@/constants/verses";
+import WidgetPreferences from "widget-preferences";
 
 function getDailyVerseIndex(): number {
   const now = new Date();
@@ -76,6 +78,7 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [now, setNow] = useState(new Date());
   const [verseIndex, setVerseIndex] = useState(getDailyVerseIndex());
+  const [pinnedIndex, setPinnedIndex] = useState<number | null>(null);
   const widgetVerseIndex = getWidgetDailyVerseIndex();
   const fadeAnim = React.useRef(new Animated.Value(1)).current;
 
@@ -85,6 +88,14 @@ export default function HomeScreen() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      WidgetPreferences.getPinnedVerseIndex().then((idx) => {
+        setPinnedIndex(idx ?? null);
+      });
+    }, []),
+  );
 
   const handleRefreshVerse = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -114,7 +125,11 @@ export default function HomeScreen() {
   }, []);
 
   const verse = BIBLE_VERSES[verseIndex];
-  const widgetVerse = BIBLE_VERSES[widgetVerseIndex];
+  const widgetVerse =
+    pinnedIndex !== null
+      ? BIBLE_VERSES[pinnedIndex]
+      : BIBLE_VERSES[widgetVerseIndex];
+  const widgetIsPinned = pinnedIndex !== null;
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
   const bottomPadding = Platform.OS === "web" ? 34 : insets.bottom;
 
@@ -179,13 +194,24 @@ export default function HomeScreen() {
         >
           <View style={[styles.verseCard, styles.widgetVerseCard]}>
             <View style={styles.verseLabelRow}>
-              <FontAwesome5
-                name="bible"
-                size={13}
-                color={Colors.gold}
-                style={{ marginRight: 7 }}
-              />
-              <Text style={styles.verseLabelText}>СТИХ ДАНА</Text>
+              {widgetIsPinned ? (
+                <Ionicons
+                  name="bookmark"
+                  size={13}
+                  color={Colors.gold}
+                  style={{ marginRight: 7 }}
+                />
+              ) : (
+                <FontAwesome5
+                  name="bible"
+                  size={13}
+                  color={Colors.gold}
+                  style={{ marginRight: 7 }}
+                />
+              )}
+              <Text style={styles.verseLabelText}>
+                {widgetIsPinned ? "ЗАКАЧЕН ЦИТАТ" : "ЦИТАТ ДАНА"}
+              </Text>
             </View>
 
             <Text style={styles.verseText}>
@@ -198,7 +224,7 @@ export default function HomeScreen() {
 
           <Pressable
             onPress={handleViewVerses}
-            accessibilityLabel="Погледај све стихове"
+            accessibilityLabel="Погледај све цитате"
             accessibilityRole="button"
           >
             <Animated.View style={[styles.verseCard, { opacity: fadeAnim }]}>
@@ -209,7 +235,7 @@ export default function HomeScreen() {
                   color={Colors.gold}
                   style={{ marginRight: 7 }}
                 />
-                <Text style={styles.verseLabelText}>СТИХОВИ</Text>
+                <Text style={styles.verseLabelText}>ЦИТАТИ</Text>
                 <Pressable
                   onPress={handleRefreshVerse}
                   style={({ pressed }) => [
@@ -217,7 +243,7 @@ export default function HomeScreen() {
                     { opacity: pressed ? 0.5 : 1 },
                   ]}
                   hitSlop={14}
-                  accessibilityLabel="Освежи стих"
+                  accessibilityLabel="Освежи Цитат"
                   accessibilityRole="button"
                 >
                   <Ionicons
