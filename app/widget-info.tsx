@@ -32,7 +32,7 @@ const STEPS = [
   {
     icon: "checkmark-circle-outline" as const,
     title: "Потврди избор",
-    desc: "Тапни \u201EГотово\u201C у горњем десном углу. Виџет ће приказивати дневни библијски стих који се мења сваког дана.",
+    desc: "Тапни \u201EГотово\u201C у горњем десном углу. Виџет ће приказивати дневни библијски цитат који се мења сваког дана.",
   },
 ];
 
@@ -82,7 +82,7 @@ export default function WidgetInfoScreen() {
           <Text style={styles.heroTitle}>Додај на закључани екран</Text>
           <Text style={styles.heroSubtitle}>
             Нека Божја реч увек буде пред тобом — тренутно време и дневни
-            библијски стих, увек надохват руке.
+            библијски цитат, увек надохват руке.
           </Text>
         </View>
 
@@ -94,7 +94,7 @@ export default function WidgetInfoScreen() {
             style={{ marginRight: 10, marginTop: 1 }}
           />
           <Text style={styles.noteText}>
-            Прати ове једноставне кораке да додаш виџет са дневним стихом на
+            Прати ове једноставне кораке да додаш виџет са дневним цитатом на
             свој закључани екран.
           </Text>
         </View>
@@ -132,7 +132,7 @@ export default function WidgetInfoScreen() {
             <Text style={styles.tipTitle}>Корисни савет</Text>
             <Text style={styles.tipText}>
               Можеш додати виџете различитих величина — мали, средњи и велики
-              (цео стих). Стих се аутоматски мења сваког дана.
+              (цео цитат). Цитат се аутоматски мења сваког дана.
             </Text>
           </View>
         </View>

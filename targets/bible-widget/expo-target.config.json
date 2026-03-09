@@ -1,3 +1,6 @@
 {
-  "type": "widget"
+  "type": "widget",
+  "entitlements": {
+    "com.apple.security.application-groups": ["group.com.pravoslavnicitati.app"]
+  }
 }

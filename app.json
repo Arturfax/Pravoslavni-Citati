@@ -41,7 +41,8 @@
       ],
       "expo-font",
       "expo-web-browser",
-      "@bacons/apple-targets"
+      "@bacons/apple-targets",
+      "./plugins/withAppGroup"
     ],
     "experiments": {
       "typedRoutes": true,
