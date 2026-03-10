@@ -1,0 +1,29 @@
+diff --git a/node_modules/@bacons/apple-targets/build/with-xcode-changes.js b/node_modules/@bacons/apple-targets/build/with-xcode-changes.js
+--- a/node_modules/@bacons/apple-targets/build/with-xcode-changes.js
++++ b/node_modules/@bacons/apple-targets/build/with-xcode-changes.js
+@@ -184,20 +184,19 @@
+         }
+     }
+     if (targetToUpdate) {
++        const existingBuildConfigurationList = targetToUpdate.props.buildConfigurationList;
+         // Remove existing build phases
+-        targetToUpdate.props.buildConfigurationList.props.buildConfigurations.forEach((config) => {
++        existingBuildConfigurationList === null || existingBuildConfigurationList === void 0 ? void 0 : existingBuildConfigurationList.props.buildConfigurations.forEach((config) => {
+             config.getReferrers().forEach((ref) => {
+                 ref.removeReference(config.uuid);
+             });
+             config.removeFromProject();
+         });
+         // Remove existing build configuration list
+-        targetToUpdate.props.buildConfigurationList
+-            .getReferrers()
+-            .forEach((ref) => {
+-            ref.removeReference(targetToUpdate.props.buildConfigurationList.uuid);
++        existingBuildConfigurationList === null || existingBuildConfigurationList === void 0 ? void 0 : existingBuildConfigurationList.getReferrers().forEach((ref) => {
++            ref.removeReference(existingBuildConfigurationList.uuid);
+         });
+-        targetToUpdate.props.buildConfigurationList.removeFromProject();
++        existingBuildConfigurationList === null || existingBuildConfigurationList === void 0 ? void 0 : existingBuildConfigurationList.removeFromProject();
+         // Create new build phases
+         targetToUpdate.props.buildConfigurationList =
+             (0, configuration_list_1.createConfigurationListForType)(project, props);

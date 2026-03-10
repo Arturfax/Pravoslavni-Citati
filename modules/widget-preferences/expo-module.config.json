@@ -1,6 +1,8 @@
 {
   "platforms": ["ios"],
   "ios": {
-    "modules": ["WidgetPreferencesModule"]
+    "modules": ["WidgetPreferencesModule"],
+    "podspecPath": "./WidgetPreferences.podspec",
+    "swiftModuleName": "WidgetPreferences"
   }
 }
