@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -6,53 +6,18 @@ import {
   FlatList,
   Pressable,
   Platform,
-  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import * as Haptics from "expo-haptics";
 import Colors from "@/constants/colors";
 import { BIBLE_VERSES } from "@/constants/verses";
-import WidgetPreferences from "widget-preferences";
 
 export default function VersesScreen() {
   const insets = useSafeAreaInsets();
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
   const bottomPadding = Platform.OS === "web" ? 34 : insets.bottom;
-  const [pinnedIndex, setPinnedIndex] = useState<number | null>(null);
-
-  useEffect(() => {
-    WidgetPreferences.getPinnedVerseIndex().then((idx) => {
-      setPinnedIndex(idx ?? null);
-    });
-  }, []);
-
-  const handlePin = useCallback(
-    (index: number) => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-      if (pinnedIndex === index) {
-        WidgetPreferences.clearPinnedVerse();
-        setPinnedIndex(null);
-      } else {
-        WidgetPreferences.setPinnedVerseIndex(index);
-        setPinnedIndex(index);
-        Alert.alert(
-          "Стих закачен",
-          "Виџет ће приказивати овај стих уместо стиха дана.",
-          [{ text: "У реду" }],
-        );
-      }
-    },
-    [pinnedIndex],
-  );
-
-  const handleClearPin = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    WidgetPreferences.clearPinnedVerse();
-    setPinnedIndex(null);
-  }, []);
 
   return (
     <View style={styles.container}>
@@ -77,39 +42,8 @@ export default function VersesScreen() {
           <Ionicons name="chevron-down" size={26} color={Colors.gold} />
         </Pressable>
         <Text style={styles.headerTitle}>Стихови</Text>
-        {pinnedIndex !== null ? (
-          <Pressable
-            onPress={handleClearPin}
-            style={({ pressed }) => [
-              styles.closeBtn,
-              { opacity: pressed ? 0.6 : 1 },
-            ]}
-            hitSlop={12}
-            accessibilityLabel="Уклони закачен стих"
-            accessibilityRole="button"
-          >
-            <Ionicons name="bookmark" size={22} color={Colors.gold} />
-          </Pressable>
-        ) : (
-          <View style={{ width: 36 }} />
-        )}
+        <View style={{ width: 36 }} />
       </View>
-
-      {pinnedIndex !== null && (
-        <View style={styles.pinnedBanner}>
-          <Ionicons
-            name="bookmark"
-            size={13}
-            color={Colors.gold}
-            style={{ marginRight: 6 }}
-          />
-          <Text style={styles.pinnedBannerText}>
-            Виџет приказује стих #{pinnedIndex + 1} — додирни{" "}
-            <Ionicons name="bookmark" size={12} color={Colors.gold} /> да
-            уклониш
-          </Text>
-        </View>
-      )}
 
       <FlatList
         data={BIBLE_VERSES}
@@ -119,50 +53,27 @@ export default function VersesScreen() {
           { paddingBottom: bottomPadding + 24 },
         ]}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item, index }) => {
-          const isPinned = pinnedIndex === index;
-          return (
-            <View
-              style={[styles.verseCard, isPinned && styles.verseCardPinned]}
-            >
-              <View style={styles.indexBadge}>
-                <Text style={styles.indexText}>{index + 1}</Text>
-              </View>
-              <View style={styles.cardBody}>
-                <FontAwesome5
-                  name="bible"
-                  size={12}
-                  color={Colors.gold}
-                  style={{ marginBottom: 10 }}
-                />
-                <Text style={styles.verseText}>
-                  {"\u201E"}
-                  {item.text}
-                  {"\u201C"}
-                </Text>
-                <Text style={styles.refText}>{item.ref}</Text>
-              </View>
-              <Pressable
-                onPress={() => handlePin(index)}
-                hitSlop={10}
-                style={({ pressed }) => [
-                  styles.pinBtn,
-                  { opacity: pressed ? 0.5 : 1 },
-                ]}
-                accessibilityLabel={
-                  isPinned ? "Уклони из виџета" : "Закачи у виџет"
-                }
-                accessibilityRole="button"
-              >
-                <Ionicons
-                  name={isPinned ? "bookmark" : "bookmark-outline"}
-                  size={20}
-                  color={isPinned ? Colors.gold : Colors.textSecondary}
-                />
-              </Pressable>
+        renderItem={({ item, index }) => (
+          <View style={styles.verseCard}>
+            <View style={styles.indexBadge}>
+              <Text style={styles.indexText}>{index + 1}</Text>
             </View>
-          );
-        }}
+            <View style={styles.cardBody}>
+              <FontAwesome5
+                name="bible"
+                size={12}
+                color={Colors.gold}
+                style={{ marginBottom: 10 }}
+              />
+              <Text style={styles.verseText}>
+                {"\u201E"}
+                {item.text}
+                {"\u201C"}
+              </Text>
+              <Text style={styles.refText}>{item.ref}</Text>
+            </View>
+          </View>
+        )}
       />
     </View>
   );
@@ -192,25 +103,6 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     letterSpacing: 0.2,
   },
-  pinnedBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginHorizontal: 20,
-    marginBottom: 8,
-    backgroundColor: "rgba(201, 168, 76, 0.12)",
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: "rgba(201, 168, 76, 0.2)",
-  },
-  pinnedBannerText: {
-    flex: 1,
-    fontSize: 12,
-    fontFamily: "Inter_400Regular",
-    color: Colors.textSecondary,
-    lineHeight: 18,
-  },
   listContent: {
     paddingHorizontal: 20,
     paddingTop: 8,
@@ -224,10 +116,6 @@ const styles = StyleSheet.create({
     padding: 20,
     flexDirection: "row",
     gap: 14,
-  },
-  verseCardPinned: {
-    borderColor: "rgba(201, 168, 76, 0.5)",
-    backgroundColor: "rgba(201, 168, 76, 0.07)",
   },
   indexBadge: {
     width: 28,
@@ -265,9 +153,5 @@ const styles = StyleSheet.create({
     color: Colors.gold,
     textAlign: "center",
     letterSpacing: 0.5,
-  },
-  pinBtn: {
-    alignSelf: "flex-start",
-    marginTop: 2,
   },
 });

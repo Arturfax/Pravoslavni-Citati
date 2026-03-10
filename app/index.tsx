@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,8 +6,7 @@ import {
   Pressable,
   Platform,
   StatusBar,
-  Animated,
-  ScrollView,
+  FlatList,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
@@ -17,7 +16,7 @@ import { useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import Colors from "@/constants/colors";
 import { BIBLE_VERSES } from "@/constants/verses";
-import WidgetPreferences from "widget-preferences";
+import WidgetPreferences from "../modules/widget-preferences";
 
 function getDailyVerseIndex(): number {
   const now = new Date();
@@ -35,16 +34,6 @@ function getWidgetDailyVerseIndex(): number {
   const dayOfYear =
     Math.floor((now.getTime() - start.getTime()) / 86400000) + 1;
   return (dayOfYear - 1) % BIBLE_VERSES.length;
-}
-
-function formatTime(date: Date): string {
-  const hours = date.getHours().toString().padStart(2, "0");
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
-}
-
-function formatSeconds(date: Date): string {
-  return date.getSeconds().toString().padStart(2, "0");
 }
 
 function formatDate(date: Date): string {
@@ -76,18 +65,11 @@ function formatDate(date: Date): string {
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const [now, setNow] = useState(new Date());
   const [verseIndex, setVerseIndex] = useState(getDailyVerseIndex());
   const [pinnedIndex, setPinnedIndex] = useState<number | null>(null);
+  const [quotePagerHeight, setQuotePagerHeight] = useState(0);
   const widgetVerseIndex = getWidgetDailyVerseIndex();
-  const fadeAnim = React.useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setNow(new Date());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const quotePagerRef = React.useRef<FlatList>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -97,39 +79,23 @@ export default function HomeScreen() {
     }, []),
   );
 
-  const handleRefreshVerse = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Animated.sequence([
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    setVerseIndex((prev) => (prev + 1) % BIBLE_VERSES.length);
-  }, [fadeAnim]);
-
   const handleWidgetInfo = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push("/widget-info");
   }, []);
 
-  const handleViewVerses = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push("/verses");
-  }, []);
+  const handleTogglePinnedVerse = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (pinnedIndex === verseIndex) {
+      WidgetPreferences.clearPinnedVerse();
+      setPinnedIndex(null);
+    } else {
+      WidgetPreferences.setPinnedVerseIndex(verseIndex);
+      setPinnedIndex(verseIndex);
+    }
+  }, [pinnedIndex, verseIndex]);
 
-  const verse = BIBLE_VERSES[verseIndex];
-  const widgetVerse =
-    pinnedIndex !== null
-      ? BIBLE_VERSES[pinnedIndex]
-      : BIBLE_VERSES[widgetVerseIndex];
-  const widgetIsPinned = pinnedIndex !== null;
+  const widgetVerse = BIBLE_VERSES[widgetVerseIndex];
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
   const bottomPadding = Platform.OS === "web" ? 34 : insets.bottom;
 
@@ -159,6 +125,7 @@ export default function HomeScreen() {
           >
             <FontAwesome5 name="cross" size={18} color={Colors.gold} />
           </View>
+          <Text style={styles.headerDateText}>{formatDate(new Date())}</Text>
           <Pressable
             onPress={handleWidgetInfo}
             style={({ pressed }) => [
@@ -177,58 +144,31 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-        <View style={styles.clockSection}>
-          <View style={styles.timeRow}>
-            <Text style={styles.timeText}>{formatTime(now)}</Text>
-            <Text style={styles.secondsText}>{formatSeconds(now)}</Text>
-          </View>
-          <Text style={styles.dateText}>{formatDate(now)}</Text>
-        </View>
-
-        <View style={styles.divider} />
-
-        <ScrollView
-          style={styles.verseWrapper}
-          contentContainerStyle={styles.verseScrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={[styles.verseCard, styles.widgetVerseCard]}>
-            <View style={styles.verseLabelRow}>
-              {widgetIsPinned ? (
-                <Ionicons
-                  name="bookmark"
-                  size={13}
-                  color={Colors.gold}
-                  style={{ marginRight: 7 }}
-                />
-              ) : (
-                <FontAwesome5
-                  name="bible"
-                  size={13}
-                  color={Colors.gold}
-                  style={{ marginRight: 7 }}
-                />
-              )}
-              <Text style={styles.verseLabelText}>
-                {widgetIsPinned ? "ЗАКАЧЕН ЦИТАТ" : "ЦИТАТ ДАНА"}
-              </Text>
+        <View style={styles.content}>
+          <View style={styles.heroSection}>
+            <View style={styles.heroLabelRow}>
+              <FontAwesome5
+                name="bible"
+                size={13}
+                color={Colors.gold}
+                style={{ marginRight: 7 }}
+              />
+              <Text style={styles.verseLabelText}>ЦИТАТ ДАНА</Text>
             </View>
 
-            <Text style={styles.verseText}>
+            <Text style={styles.heroVerseText}>
               {"\u201E"}
               {widgetVerse.text}
               {"\u201C"}
             </Text>
-            <Text style={styles.refText}>{widgetVerse.ref}</Text>
+            <Text style={styles.heroRefText}>{widgetVerse.ref}</Text>
           </View>
 
-          <Pressable
-            onPress={handleViewVerses}
-            accessibilityLabel="Погледај све цитате"
-            accessibilityRole="button"
-          >
-            <Animated.View style={[styles.verseCard, { opacity: fadeAnim }]}>
-              <View style={styles.verseLabelRow}>
+          <View style={styles.divider} />
+
+          <View style={[styles.verseCard, styles.bottomVerseCard]}>
+            <View style={styles.verseLabelRow}>
+              <View style={styles.verseHeaderButton}>
                 <FontAwesome5
                   name="bible"
                   size={13}
@@ -236,33 +176,85 @@ export default function HomeScreen() {
                   style={{ marginRight: 7 }}
                 />
                 <Text style={styles.verseLabelText}>ЦИТАТИ</Text>
-                <Pressable
-                  onPress={handleRefreshVerse}
-                  style={({ pressed }) => [
-                    styles.refreshBtn,
-                    { opacity: pressed ? 0.5 : 1 },
-                  ]}
-                  hitSlop={14}
-                  accessibilityLabel="Освежи Цитат"
-                  accessibilityRole="button"
-                >
-                  <Ionicons
-                    name="refresh-circle-outline"
-                    size={22}
-                    color={Colors.gold}
-                  />
-                </Pressable>
               </View>
+              <Pressable
+                onPress={handleTogglePinnedVerse}
+                style={({ pressed }) => [
+                  styles.refreshBtn,
+                  { opacity: pressed ? 0.5 : 1 },
+                ]}
+                hitSlop={14}
+                accessibilityLabel={
+                  pinnedIndex === verseIndex
+                    ? "Уклони цитат са виџета"
+                    : "Постави цитат на виџет"
+                }
+                accessibilityRole="button"
+              >
+                <Ionicons
+                  name={
+                    pinnedIndex === verseIndex ? "bookmark" : "bookmark-outline"
+                  }
+                  size={22}
+                  color={Colors.gold}
+                />
+              </Pressable>
+            </View>
 
-              <Text style={styles.verseText}>
-                {"\u201E"}
-                {verse.text}
-                {"\u201C"}
-              </Text>
-              <Text style={styles.refText}>{verse.ref}</Text>
-            </Animated.View>
-          </Pressable>
-        </ScrollView>
+            <View
+              style={styles.bottomVerseContent}
+              onLayout={({ nativeEvent }) => {
+                const nextHeight = Math.round(nativeEvent.layout.height);
+                if (nextHeight > 0 && nextHeight !== quotePagerHeight) {
+                  setQuotePagerHeight(nextHeight);
+                }
+              }}
+            >
+              {quotePagerHeight > 0 ? (
+                <FlatList
+                  ref={quotePagerRef}
+                  data={BIBLE_VERSES}
+                  key={quotePagerHeight}
+                  keyExtractor={(_, index) => String(index)}
+                  initialScrollIndex={verseIndex}
+                  getItemLayout={(_, index) => ({
+                    length: quotePagerHeight,
+                    offset: quotePagerHeight * index,
+                    index,
+                  })}
+                  renderItem={({ item }) => (
+                    <View
+                      style={[styles.quotePage, { height: quotePagerHeight }]}
+                    >
+                      <Text style={styles.verseText}>
+                        {"\u201E"}
+                        {item.text}
+                        {"\u201C"}
+                      </Text>
+                      <Text style={styles.refText}>{item.ref}</Text>
+                    </View>
+                  )}
+                  pagingEnabled
+                  decelerationRate="fast"
+                  disableIntervalMomentum
+                  snapToInterval={quotePagerHeight}
+                  snapToAlignment="start"
+                  showsVerticalScrollIndicator={false}
+                  bounces={false}
+                  scrollEventThrottle={16}
+                  onMomentumScrollEnd={({ nativeEvent }) => {
+                    const nextIndex = Math.round(
+                      nativeEvent.contentOffset.y / quotePagerHeight,
+                    );
+                    if (nextIndex !== verseIndex) {
+                      setVerseIndex(nextIndex);
+                    }
+                  }}
+                />
+              ) : null}
+            </View>
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -281,7 +273,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 0,
+    marginBottom: 6,
   },
   crossContainer: {
     width: 36,
@@ -289,59 +281,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  headerDateText: {
+    flex: 1,
+    fontSize: 17,
+    fontFamily: "Inter_400Regular",
+    color: Colors.textSecondary,
+    letterSpacing: 0.3,
+    textAlign: "center",
+    marginHorizontal: 12,
+  },
   widgetBtn: {
     width: 36,
     height: 36,
     alignItems: "center",
     justifyContent: "center",
   },
-  clockSection: {
-    alignItems: "center",
-    paddingTop: 12,
-    paddingBottom: 20,
-  },
-  timeRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "center",
-  },
-  timeText: {
-    fontSize: 92,
-    fontFamily: "Inter_700Bold",
-    color: Colors.textPrimary,
-    letterSpacing: -4,
-    lineHeight: 100,
-    textAlign: "center",
-  },
-  secondsText: {
-    fontSize: 28,
-    fontFamily: "Inter_400Regular",
-    color: Colors.secondsColor,
-    letterSpacing: -1,
-    marginBottom: 10,
-    marginLeft: 6,
-  },
-  dateText: {
-    fontSize: 17,
-    fontFamily: "Inter_400Regular",
-    color: Colors.textSecondary,
-    letterSpacing: 0.3,
-    marginTop: 6,
-    textAlign: "center",
-  },
-  divider: {
-    height: 1,
-    backgroundColor: Colors.goldOverlayFaint,
-    marginBottom: 0,
-  },
-  verseWrapper: {
+  content: {
     flex: 1,
+    paddingTop: 12,
+    paddingBottom: 16,
   },
-  verseScrollContent: {
-    paddingVertical: 16,
-    gap: 16,
+  heroSection: {
+    flex: 0.5,
     justifyContent: "center",
-    flexGrow: 1,
+    alignItems: "center",
+    paddingHorizontal: 8,
   },
   verseCard: {
     backgroundColor: Colors.cardBgTranslucent,
@@ -355,6 +319,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
   },
+  verseHeaderButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  heroLabelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 14,
+  },
   verseLabelText: {
     fontSize: 11,
     fontFamily: "Inter_600SemiBold",
@@ -365,8 +339,36 @@ const styles = StyleSheet.create({
   refreshBtn: {
     marginLeft: 8,
   },
-  widgetVerseCard: {
-    opacity: 0.85,
+  divider: {
+    height: 1,
+    backgroundColor: Colors.goldOverlayFaint,
+    marginBottom: 16,
+  },
+  bottomVerseCard: {
+    flex: 1,
+  },
+  bottomVerseContent: {
+    flex: 1,
+    overflow: "hidden",
+  },
+  quotePage: {
+    justifyContent: "center",
+  },
+  heroVerseText: {
+    fontSize: 18,
+    fontFamily: "Inter_400Regular",
+    color: Colors.textPrimary,
+    lineHeight: 30,
+    fontStyle: "italic",
+    textAlign: "center",
+    marginBottom: 14,
+  },
+  heroRefText: {
+    fontSize: 14,
+    fontFamily: "Inter_600SemiBold",
+    color: Colors.gold,
+    textAlign: "center",
+    letterSpacing: 0.5,
   },
   verseText: {
     fontSize: 20,
