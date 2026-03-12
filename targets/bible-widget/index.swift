@@ -272,33 +272,53 @@ private let navy    = Color(red: 0.04, green: 0.05, blue: 0.09)
 private let cream   = Color(red: 0.94, green: 0.92, blue: 0.84)
 private let gold    = Color(red: 0.79, green: 0.66, blue: 0.30)
 
+private func quoteText(_ text: String, size: CGFloat, alignment: TextAlignment = .center, lineSpacing: CGFloat = 0) -> some View {
+    Text("\u{201E}\(text)\u{201C}")
+        .font(.system(size: size))
+        .italic()
+        .foregroundColor(cream)
+        .multilineTextAlignment(alignment)
+        .lineSpacing(lineSpacing)
+        .allowsTightening(true)
+        .fixedSize(horizontal: false, vertical: true)
+}
+
 // MARK: - Home Screen Views
 
 struct HomeSmallView: View {
     let entry: BibleVerseEntry
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 0) {
             Image(systemName: "cross.fill")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(gold)
-            Text("\u{201E}\(entry.verseText)\u{201C}")
-                .font(.system(size: 11))
-                .italic()
-                .foregroundColor(cream)
-                .multilineTextAlignment(.center)
-                .lineLimit(5)
+                .padding(.top, 2)
+                .padding(.bottom, 8)
+            Spacer(minLength: 6)
+            ViewThatFits(in: .vertical) {
+                quoteText(entry.verseText, size: 11)
+                quoteText(entry.verseText, size: 10)
+                quoteText(entry.verseText, size: 9)
+                quoteText(entry.verseText, size: 8)
+                quoteText(entry.verseText, size: 7)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            Spacer(minLength: 6)
             Text(entry.verseRef)
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundColor(gold)
+                .padding(.bottom, 2)
         }
-        .padding(12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
     }
 }
 
 struct HomeMediumView: View {
     let entry: BibleVerseEntry
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 0) {
             HStack(spacing: 6) {
                 Image(systemName: "cross.fill")
                     .font(.system(size: 12, weight: .semibold))
@@ -308,17 +328,26 @@ struct HomeMediumView: View {
                     .kerning(1.4)
                     .foregroundColor(gold)
             }
-            Text("\u{201E}\(entry.verseText)\u{201C}")
-                .font(.system(size: 13))
-                .italic()
-                .foregroundColor(cream)
-                .multilineTextAlignment(.center)
-                .lineLimit(4)
+            .padding(.top, 2)
+            .padding(.bottom, 10)
+            Spacer(minLength: 8)
+            ViewThatFits(in: .vertical) {
+                quoteText(entry.verseText, size: 13)
+                quoteText(entry.verseText, size: 12)
+                quoteText(entry.verseText, size: 11)
+                quoteText(entry.verseText, size: 10)
+                quoteText(entry.verseText, size: 9)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            Spacer(minLength: 8)
             Text(entry.verseRef)
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundColor(gold)
+                .padding(.bottom, 2)
         }
-        .padding(16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
     }
 }
 
@@ -326,31 +355,37 @@ struct HomeLargeView: View {
     let entry: BibleVerseEntry
     var body: some View {
         VStack(spacing: 0) {
-            Spacer()
             Image(systemName: "cross.fill")
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(gold)
-                .padding(.bottom, 16)
+                .padding(.top, 6)
+                .padding(.bottom, 12)
 
-            Text("\u{201E}\(entry.verseText)\u{201C}")
-                .font(.system(size: 17))
-                .italic()
-                .foregroundColor(cream)
-                .multilineTextAlignment(.center)
-                .lineSpacing(6)
-                .padding(.horizontal, 20)
+            Spacer(minLength: 10)
+            ViewThatFits(in: .vertical) {
+                quoteText(entry.verseText, size: 17, lineSpacing: 6)
+                quoteText(entry.verseText, size: 16, lineSpacing: 5)
+                quoteText(entry.verseText, size: 15, lineSpacing: 4)
+                quoteText(entry.verseText, size: 14, lineSpacing: 4)
+                quoteText(entry.verseText, size: 13, lineSpacing: 3)
+                quoteText(entry.verseText, size: 12, lineSpacing: 3)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.horizontal, 14)
 
+            Spacer(minLength: 10)
             Rectangle()
                 .fill(gold.opacity(0.3))
                 .frame(height: 1)
-                .padding(.horizontal, 32)
-                .padding(.vertical, 18)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
 
             Text(entry.verseRef)
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(gold)
-            Spacer()
+                .padding(.bottom, 4)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -367,19 +402,15 @@ struct LockInlineView: View {
 struct LockRectangularView: View {
     let entry: BibleVerseEntry
     var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            HStack(spacing: 5) {
-                Image(systemName: "cross.fill")
-                    .font(.system(size: 9, weight: .bold))
-                Text(entry.verseRef)
-                    .font(.system(size: 11, weight: .bold))
-            }
-            Text(entry.verseText)
-                .font(.system(size: 11))
-                .lineLimit(2)
-                .truncationMode(.tail)
+        ViewThatFits(in: .vertical) {
+            quoteText(entry.verseText, size: 13, alignment: .leading)
+            quoteText(entry.verseText, size: 12, alignment: .leading)
+            quoteText(entry.verseText, size: 11, alignment: .leading)
+            quoteText(entry.verseText, size: 10, alignment: .leading)
+            quoteText(entry.verseText, size: 9, alignment: .leading)
+            quoteText(entry.verseText, size: 8, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
 }
 
@@ -442,6 +473,7 @@ struct BibleHomeWidget: Widget {
             HomeWidgetEntryView(entry: entry)
                 .containerBackground(navy, for: .widget)
         }
+        .contentMarginsDisabled()
         .configurationDisplayName("Стих дана")
         .description("Дневни православни стих.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
@@ -456,6 +488,7 @@ struct BibleLockWidget: Widget {
             LockWidgetEntryView(entry: entry)
                 .containerBackground(.clear, for: .widget)
         }
+        .contentMarginsDisabled()
         .configurationDisplayName("Стих дана — закључани екран")
         .description("Дневни православни стих на закључаном екрану.")
         .supportedFamilies([
