@@ -63,10 +63,20 @@ Supported placements:
 Widgets automatically refresh when the daily verse changes.
 
 ---
-🎯 Purpose
+##🎯 Purpose
 
 The goal of this project is to make daily Scripture reflection simple and accessible by placing a Bible verse directly on the user's device through widgets.
 
+##ABOUT
+  Authors: Luka Artukov, Mihailo Kovačević
+  This application was created as a proof of concept. 
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ## 🚀 Running the Project
 
 Clone the repository:
@@ -74,3 +84,4 @@ Clone the repository:
 ```bash
 git clone https://github.com/yourusername/serbian-orthodox-daily-verse.git
 cd serbian-orthodox-daily-verse
+
