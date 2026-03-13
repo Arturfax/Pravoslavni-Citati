@@ -9,14 +9,14 @@ import {
   FlatList,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
+import { Ionicons, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Colors from "@/constants/colors";
 import { BIBLE_VERSES } from "@/constants/verses";
-import WidgetPreferences from "../modules/widget-preferences";
+import WidgetPreferences from "../../modules/widget-preferences";
 
 function getDailyVerseIndex(): number {
   const now = new Date();
@@ -26,55 +26,34 @@ function getDailyVerseIndex(): number {
   return dayOfYear % BIBLE_VERSES.length;
 }
 
-// Matches the widget's Swift formula: (ordinality(day, in: year) - 1) % count
-// Swift ordinality returns 1 for Jan 1, so index = (dayOfYear_1based - 1) % count
-function getWidgetDailyVerseIndex(): number {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 1);
-  const dayOfYear =
-    Math.floor((now.getTime() - start.getTime()) / 86400000) + 1;
-  return (dayOfYear - 1) % BIBLE_VERSES.length;
-}
-
 function formatDate(date: Date): string {
   const days = [
-    "Недеља",
-    "Понедељак",
-    "Уторак",
-    "Среда",
-    "Четвртак",
-    "Петак",
-    "Субота",
+    "Недеља", "Понедељак", "Уторак", "Среда", "Четвртак", "Петак", "Субота",
   ];
   const months = [
-    "јануар",
-    "фебруар",
-    "март",
-    "април",
-    "мај",
-    "јун",
-    "јул",
-    "август",
-    "септембар",
-    "октобар",
-    "новембар",
-    "децембар",
+    "јануар", "фебруар", "март", "април", "мај", "јун",
+    "јул", "август", "септембар", "октобар", "новембар", "децембар",
   ];
   return `${days[date.getDay()]}, ${date.getDate()}. ${months[date.getMonth()]}`;
 }
+
+const FAVORITES_KEY = "favorites";
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [verseIndex, setVerseIndex] = useState(getDailyVerseIndex());
   const [pinnedIndex, setPinnedIndex] = useState<number | null>(null);
+  const [favorites, setFavorites] = useState<number[]>([]);
   const [quotePagerHeight, setQuotePagerHeight] = useState(0);
-  const widgetVerseIndex = getWidgetDailyVerseIndex();
   const quotePagerRef = React.useRef<FlatList>(null);
 
   useFocusEffect(
     useCallback(() => {
       WidgetPreferences.getPinnedVerseIndex().then((idx) => {
         setPinnedIndex(idx ?? null);
+      });
+      AsyncStorage.getItem(FAVORITES_KEY).then((val) => {
+        if (val) setFavorites(JSON.parse(val));
       });
     }, []),
   );
@@ -95,9 +74,18 @@ export default function HomeScreen() {
     }
   }, [pinnedIndex, verseIndex]);
 
-  const widgetVerse = BIBLE_VERSES[widgetVerseIndex];
+  const handleToggleFavorite = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setFavorites((prev) => {
+      const next = prev.includes(verseIndex)
+        ? prev.filter((i) => i !== verseIndex)
+        : [...prev, verseIndex];
+      AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, [verseIndex]);
+
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPadding = Platform.OS === "web" ? 34 : insets.bottom;
 
   return (
     <View style={styles.container}>
@@ -109,20 +97,9 @@ export default function HomeScreen() {
         end={{ x: 0.5, y: 1 }}
       />
 
-      <View
-        style={[
-          styles.inner,
-          {
-            paddingTop: topPadding + 8,
-            paddingBottom: bottomPadding + 16,
-          },
-        ]}
-      >
+      <View style={[styles.inner, { paddingTop: topPadding + 8 }]}>
         <View style={styles.topRow}>
-          <View
-            style={styles.crossContainer}
-            accessibilityLabel="Православни Цитати"
-          >
+          <View style={styles.crossContainer}>
             <FontAwesome5 name="cross" size={18} color={Colors.gold} />
           </View>
           <Text style={styles.headerDateText}>{formatDate(new Date())}</Text>
@@ -145,27 +122,6 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.content}>
-          <View style={styles.heroSection}>
-            <View style={styles.heroLabelRow}>
-              <FontAwesome5
-                name="bible"
-                size={13}
-                color={Colors.gold}
-                style={{ marginRight: 7 }}
-              />
-              <Text style={styles.verseLabelText}>ЦИТАТ ДАНА</Text>
-            </View>
-
-            <Text style={styles.heroVerseText}>
-              {"\u201E"}
-              {widgetVerse.text}
-              {"\u201C"}
-            </Text>
-            <Text style={styles.heroRefText}>{widgetVerse.ref}</Text>
-          </View>
-
-          <View style={styles.divider} />
-
           <View style={[styles.verseCard, styles.bottomVerseCard]}>
             <View style={styles.verseLabelRow}>
               <View style={styles.verseHeaderButton}>
@@ -178,10 +134,30 @@ export default function HomeScreen() {
                 <Text style={styles.verseLabelText}>ЦИТАТИ</Text>
               </View>
               <Pressable
+                onPress={handleToggleFavorite}
+                style={({ pressed }) => [
+                  styles.actionBtn,
+                  { opacity: pressed ? 0.5 : 1 },
+                ]}
+                hitSlop={14}
+                accessibilityLabel={
+                  favorites.includes(verseIndex)
+                    ? "Уклони из омиљених"
+                    : "Додај у омиљене"
+                }
+                accessibilityRole="button"
+              >
+                <Ionicons
+                  name={favorites.includes(verseIndex) ? "heart" : "heart-outline"}
+                  size={22}
+                  color={favorites.includes(verseIndex) ? "#E05555" : Colors.gold}
+                />
+              </Pressable>
+              <Pressable
                 onPress={handleTogglePinnedVerse}
                 style={({ pressed }) => [
-                  styles.refreshBtn,
-                  { opacity: pressed ? 0.5 : 1 },
+                  styles.actionBtn,
+                  { opacity: pressed ? 0.5 : 1, marginLeft: 12 },
                 ]}
                 hitSlop={14}
                 accessibilityLabel={
@@ -191,9 +167,9 @@ export default function HomeScreen() {
                 }
                 accessibilityRole="button"
               >
-                <Ionicons
+                <MaterialCommunityIcons
                   name={
-                    pinnedIndex === verseIndex ? "bookmark" : "bookmark-outline"
+                    pinnedIndex === verseIndex ? "pin" : "pin-outline"
                   }
                   size={22}
                   color={Colors.gold}
@@ -299,13 +275,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingTop: 12,
-    paddingBottom: 16,
-  },
-  heroSection: {
-    flex: 0.5,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 8,
+    paddingBottom: 8,
   },
   verseCard: {
     backgroundColor: Colors.cardBgTranslucent,
@@ -324,11 +294,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  heroLabelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 14,
-  },
   verseLabelText: {
     fontSize: 11,
     fontFamily: "Inter_600SemiBold",
@@ -336,13 +301,8 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     flex: 1,
   },
-  refreshBtn: {
+  actionBtn: {
     marginLeft: 8,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: Colors.goldOverlayFaint,
-    marginBottom: 16,
   },
   bottomVerseCard: {
     flex: 1,
@@ -353,22 +313,6 @@ const styles = StyleSheet.create({
   },
   quotePage: {
     justifyContent: "center",
-  },
-  heroVerseText: {
-    fontSize: 18,
-    fontFamily: "Inter_400Regular",
-    color: Colors.textPrimary,
-    lineHeight: 30,
-    fontStyle: "italic",
-    textAlign: "center",
-    marginBottom: 14,
-  },
-  heroRefText: {
-    fontSize: 14,
-    fontFamily: "Inter_600SemiBold",
-    color: Colors.gold,
-    textAlign: "center",
-    letterSpacing: 0.5,
   },
   verseText: {
     fontSize: 20,
