@@ -8,6 +8,12 @@ The app contains verses from the entire Bible and selects **one verse every day*
 
 ## 📖 Features
 
+- **Home Screen**
+  - Scrollable option to view all the Orthodox verses with separate functionality to change which verse is displayed on widgets, and a Like feature to favourite verses.
+
+- **Liked Screen**
+  - Separate view to show all liked verses and allow direct manipulation with them (dislike, like).
+    
 - **Daily Bible Verse**
   - A new verse is automatically selected every day.
 
