@@ -7,12 +7,13 @@ import {
   Pressable,
   Platform,
 } from "react-native";
+import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import Colors from "@/constants/colors";
 import { BIBLE_VERSES } from "@/constants/verses";
+import { CHURCH_IMAGES } from "@/constants/images";
 
 export default function VersesScreen() {
   const insets = useSafeAreaInsets();
@@ -21,12 +22,14 @@ export default function VersesScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={Colors.gradientAlt}
-        style={StyleSheet.absoluteFill}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
+      <Image
+        source={CHURCH_IMAGES[5]} // Another beautiful specific image
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+        contentFit="cover"
+        contentPosition="center"
+        transition={300}
       />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.overlayHeavy }]} />
 
       <View style={[styles.header, { paddingTop: topPadding + 12 }]}>
         <Pressable
@@ -82,7 +85,7 @@ export default function VersesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.containerBg,
+    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: "row",
@@ -100,7 +103,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 17,
     fontFamily: "Inter_600SemiBold",
-    color: Colors.textPrimary,
+    color: Colors.text,
     letterSpacing: 0.2,
   },
   listContent: {
@@ -109,10 +112,10 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   verseCard: {
-    backgroundColor: Colors.cardBgTranslucent,
+    backgroundColor: Colors.overlayCard,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: Colors.goldOverlayFaint,
+    borderColor: Colors.cardBorder,
     padding: 20,
     flexDirection: "row",
     gap: 14,
@@ -121,9 +124,9 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: Colors.goldOverlayMedium,
+    backgroundColor: Colors.iconBackground,
     borderWidth: 1,
-    borderColor: "rgba(201, 168, 76, 0.3)",
+    borderColor: Colors.separator,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -141,7 +144,7 @@ const styles = StyleSheet.create({
   verseText: {
     fontSize: 16,
     fontFamily: "Inter_400Regular",
-    color: Colors.textPrimary,
+    color: Colors.text,
     lineHeight: 26,
     fontStyle: "italic",
     textAlign: "center",

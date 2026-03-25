@@ -4,18 +4,20 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  Platform,
   StatusBar,
   FlatList,
+  Share,
+  Platform,
 } from "react-native";
+import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router, useFocusEffect } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Colors from "@/constants/colors";
 import { BIBLE_VERSES } from "@/constants/verses";
+import { CHURCH_IMAGES } from "@/constants/images";
 import WidgetPreferences from "../../modules/widget-preferences";
 
 function getDailyVerseIndex(): number {
@@ -85,17 +87,31 @@ export default function HomeScreen() {
     });
   }, [verseIndex]);
 
+  const handleShare = useCallback(async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const verse = BIBLE_VERSES[verseIndex];
+    try {
+      await Share.share({
+        message: `„${verse.text}”\n— ${verse.ref}`,
+      });
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  }, [verseIndex]);
+
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <LinearGradient
-        colors={Colors.gradient}
-        style={StyleSheet.absoluteFill}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
+      <Image
+        source={CHURCH_IMAGES[verseIndex % CHURCH_IMAGES.length]}
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+        contentFit="cover"
+        contentPosition="center"
+        transition={300}
       />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.overlayHeavy }]} />
 
       <View style={[styles.inner, { paddingTop: topPadding + 8 }]}>
         <View style={styles.topRow}>
@@ -175,6 +191,22 @@ export default function HomeScreen() {
                   color={Colors.gold}
                 />
               </Pressable>
+              <Pressable
+                onPress={handleShare}
+                style={({ pressed }) => [
+                  styles.actionBtn,
+                  { opacity: pressed ? 0.5 : 1, marginLeft: 12 },
+                ]}
+                hitSlop={14}
+                accessibilityLabel="Подели цитат"
+                accessibilityRole="button"
+              >
+                <Ionicons
+                  name="share-social-outline"
+                  size={22}
+                  color={Colors.gold}
+                />
+              </Pressable>
             </View>
 
             <View
@@ -239,7 +271,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.containerBg,
+    backgroundColor: Colors.background,
   },
   inner: {
     flex: 1,
@@ -261,7 +293,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 17,
     fontFamily: "Inter_400Regular",
-    color: Colors.textSecondary,
+    color: Colors.textMuted,
     letterSpacing: 0.3,
     textAlign: "center",
     marginHorizontal: 12,
@@ -275,14 +307,12 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingTop: 12,
-    paddingBottom: 8,
+    paddingBottom: 115,
   },
   verseCard: {
-    backgroundColor: Colors.cardBgTranslucent,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: Colors.goldOverlayFaint,
-    padding: 24,
+    backgroundColor: "transparent",
+    paddingVertical: 12,
+    paddingHorizontal: 12,
   },
   verseLabelRow: {
     flexDirection: "row",
@@ -317,7 +347,7 @@ const styles = StyleSheet.create({
   verseText: {
     fontSize: 20,
     fontFamily: "Inter_400Regular",
-    color: Colors.textPrimary,
+    color: Colors.text,
     lineHeight: 32,
     fontStyle: "italic",
     textAlign: "center",

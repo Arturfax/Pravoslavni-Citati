@@ -5,12 +5,16 @@ import {
   StyleSheet,
   Platform,
   StatusBar,
+  Share,
+  Pressable,
 } from "react-native";
+import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { FontAwesome5 } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
+import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import Colors from "@/constants/colors";
 import { BIBLE_VERSES } from "@/constants/verses";
+import { CHURCH_IMAGES } from "@/constants/images";
 
 function getWidgetDailyVerseIndex(): number {
   const now = new Date();
@@ -37,15 +41,28 @@ export default function DailyScreen() {
   const verse = BIBLE_VERSES[widgetVerseIndex];
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
 
+  const handleShare = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      await Share.share({
+        message: `„${verse.text}”\n— ${verse.ref}`,
+      });
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <LinearGradient
-        colors={Colors.gradient}
-        style={StyleSheet.absoluteFill}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
+      <Image
+        source={CHURCH_IMAGES[widgetVerseIndex % CHURCH_IMAGES.length]}
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+        contentFit="cover"
+        contentPosition="center"
+        transition={300}
       />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.overlayHeavy }]} />
 
       <View style={[styles.inner, { paddingTop: topPadding + 8 }]}>
         <Text style={styles.dateText}>{formatDate(new Date())}</Text>
@@ -65,8 +82,8 @@ export default function DailyScreen() {
             <FontAwesome5
               name="cross"
               size={28}
-              color={Colors.goldOverlayFaint}
-              style={{ marginBottom: 24 }}
+              color={Colors.gold}
+              style={{ marginBottom: 24, opacity: 0.8 }}
             />
             <Text style={styles.verseText}>
               {"\u201E"}
@@ -74,6 +91,19 @@ export default function DailyScreen() {
               {"\u201C"}
             </Text>
             <Text style={styles.refText}>{verse.ref}</Text>
+
+            <Pressable
+              onPress={handleShare}
+              style={({ pressed }) => [
+                styles.shareBtn,
+                { opacity: pressed ? 0.6 : 1 },
+              ]}
+              hitSlop={16}
+              accessibilityLabel="Подели цитат"
+              accessibilityRole="button"
+            >
+              <Ionicons name="share-social-outline" size={20} color={Colors.gold} />
+            </Pressable>
           </View>
         </View>
       </View>
@@ -84,7 +114,7 @@ export default function DailyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.containerBg,
+    backgroundColor: Colors.background,
   },
   inner: {
     flex: 1,
@@ -93,7 +123,7 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 17,
     fontFamily: "Inter_400Regular",
-    color: Colors.textSecondary,
+    color: Colors.textMuted,
     letterSpacing: 0.3,
     textAlign: "center",
     marginBottom: 6,
@@ -102,7 +132,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingBottom: 40,
+    paddingBottom: 115,
   },
   labelRow: {
     flexDirection: "row",
@@ -122,7 +152,7 @@ const styles = StyleSheet.create({
   verseText: {
     fontSize: 22,
     fontFamily: "Inter_400Regular",
-    color: Colors.textPrimary,
+    color: Colors.text,
     lineHeight: 36,
     fontStyle: "italic",
     textAlign: "center",
@@ -134,5 +164,16 @@ const styles = StyleSheet.create({
     color: Colors.gold,
     textAlign: "center",
     letterSpacing: 0.5,
+  },
+  shareBtn: {
+    marginTop: 32,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.iconBackground,
+    borderWidth: 1,
+    borderColor: Colors.separator,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

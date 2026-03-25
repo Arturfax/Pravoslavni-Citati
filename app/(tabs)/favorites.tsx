@@ -8,14 +8,15 @@ import {
   FlatList,
   Pressable,
 } from "react-native";
+import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Colors from "@/constants/colors";
 import { BIBLE_VERSES } from "@/constants/verses";
+import { CHURCH_IMAGES } from "@/constants/images";
 
 const FAVORITES_KEY = "favorites";
 
@@ -47,12 +48,14 @@ export default function FavoritesScreen() {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <LinearGradient
-        colors={Colors.gradient}
-        style={StyleSheet.absoluteFill}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
+      <Image
+        source={CHURCH_IMAGES[3]} // Use a specific beautiful image for favorites
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+        contentFit="cover"
+        contentPosition="center"
+        transition={300}
       />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.overlayHeavy }]} />
 
       <View style={[styles.inner, { paddingTop: topPadding + 8 }]}>
         <View style={styles.headerRow}>
@@ -65,7 +68,8 @@ export default function FavoritesScreen() {
             <Ionicons
               name="heart-outline"
               size={48}
-              color={Colors.goldOverlayFaint}
+              color={Colors.gold}
+              style={{ opacity: 0.5 }}
             />
             <Text style={styles.emptyText}>
               Немате омиљених цитата.
@@ -98,7 +102,7 @@ export default function FavoritesScreen() {
                   accessibilityLabel="Уклони из омиљених"
                   accessibilityRole="button"
                 >
-                  <Ionicons name="heart-dislike-outline" size={18} color={Colors.textSecondary} />
+                  <Ionicons name="heart-dislike-outline" size={18} color={Colors.textMuted} />
                 </Pressable>
               </View>
             )}
@@ -112,7 +116,7 @@ export default function FavoritesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.containerBg,
+    backgroundColor: Colors.background,
   },
   inner: {
     flex: 1,
@@ -135,39 +139,39 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingBottom: 60,
+    paddingBottom: 115,
   },
   emptyText: {
     fontSize: 16,
     fontFamily: "Inter_500Medium",
-    color: Colors.textPrimary,
+    color: Colors.text,
     marginTop: 16,
     textAlign: "center",
   },
   emptySubtext: {
     fontSize: 14,
     fontFamily: "Inter_400Regular",
-    color: Colors.textSecondary,
+    color: Colors.textMuted,
     marginTop: 8,
     textAlign: "center",
     paddingHorizontal: 32,
     lineHeight: 22,
   },
   listContent: {
-    paddingBottom: 16,
+    paddingBottom: 115,
   },
   card: {
-    backgroundColor: Colors.cardBgTranslucent,
+    backgroundColor: Colors.overlayCard,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.goldOverlayFaint,
+    borderColor: Colors.cardBorder,
     padding: 20,
     marginBottom: 12,
   },
   verseText: {
     fontSize: 16,
     fontFamily: "Inter_400Regular",
-    color: Colors.textPrimary,
+    color: Colors.text,
     lineHeight: 26,
     fontStyle: "italic",
     textAlign: "center",
