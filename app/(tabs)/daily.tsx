@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -12,9 +12,13 @@ import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { useFocusEffect } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Colors from "@/constants/colors";
 import { BIBLE_VERSES } from "@/constants/verses";
 import { CHURCH_IMAGES } from "@/constants/images";
+
+const FAVORITES_KEY = "favorites";
 
 function getWidgetDailyVerseIndex(): number {
   const now = new Date();
@@ -39,9 +43,30 @@ export default function DailyScreen() {
   const insets = useSafeAreaInsets();
   const widgetVerseIndex = getWidgetDailyVerseIndex();
   const verse = BIBLE_VERSES[widgetVerseIndex];
+  const [favorites, setFavorites] = useState<number[]>([]);
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
 
-  const handleShare = async () => {
+  useFocusEffect(
+    useCallback(() => {
+      AsyncStorage.getItem(FAVORITES_KEY).then((val) => {
+        if (val) setFavorites(JSON.parse(val));
+        else setFavorites([]);
+      });
+    }, []),
+  );
+
+  const handleToggleFavorite = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setFavorites((prev) => {
+      const next = prev.includes(widgetVerseIndex)
+        ? prev.filter((i) => i !== widgetVerseIndex)
+        : [...prev, widgetVerseIndex];
+      AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, [widgetVerseIndex]);
+
+  const handleShare = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
       await Share.share({
@@ -50,13 +75,13 @@ export default function DailyScreen() {
     } catch (error) {
       console.error("Error sharing:", error);
     }
-  };
+  }, [verse]);
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       <Image
-        source={CHURCH_IMAGES[widgetVerseIndex % CHURCH_IMAGES.length]}
+        source={CHURCH_IMAGES[4]}
         style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
         contentFit="cover"
         contentPosition="center"
@@ -92,18 +117,40 @@ export default function DailyScreen() {
             </Text>
             <Text style={styles.refText}>{verse.ref}</Text>
 
-            <Pressable
-              onPress={handleShare}
-              style={({ pressed }) => [
-                styles.shareBtn,
-                { opacity: pressed ? 0.6 : 1 },
-              ]}
-              hitSlop={16}
-              accessibilityLabel="Подели цитат"
-              accessibilityRole="button"
-            >
-              <Ionicons name="share-social-outline" size={20} color={Colors.gold} />
-            </Pressable>
+            <View style={styles.actionsRow}>
+              <Pressable
+                onPress={handleToggleFavorite}
+                style={({ pressed }) => [
+                  styles.actionBtn,
+                  { opacity: pressed ? 0.6 : 1 },
+                ]}
+                hitSlop={16}
+                accessibilityLabel={
+                  favorites.includes(widgetVerseIndex)
+                    ? "Уклони из омиљених"
+                    : "Додај у омиљене"
+                }
+                accessibilityRole="button"
+              >
+                <Ionicons
+                  name={favorites.includes(widgetVerseIndex) ? "heart" : "heart-outline"}
+                  size={20}
+                  color={favorites.includes(widgetVerseIndex) ? "#E05555" : Colors.gold}
+                />
+              </Pressable>
+              <Pressable
+                onPress={handleShare}
+                style={({ pressed }) => [
+                  styles.actionBtn,
+                  { opacity: pressed ? 0.6 : 1, marginLeft: 12 },
+                ]}
+                hitSlop={16}
+                accessibilityLabel="Подели цитат"
+                accessibilityRole="button"
+              >
+                <Ionicons name="share-social-outline" size={20} color={Colors.gold} />
+              </Pressable>
+            </View>
           </View>
         </View>
       </View>
@@ -165,8 +212,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     letterSpacing: 0.5,
   },
-  shareBtn: {
+  actionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 32,
+  },
+  actionBtn: {
     width: 44,
     height: 44,
     borderRadius: 22,
