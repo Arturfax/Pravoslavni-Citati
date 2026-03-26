@@ -1,16 +1,24 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Platform,
   StatusBar,
+  Share,
+  Pressable,
 } from "react-native";
+import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { FontAwesome5 } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
+import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { useFocusEffect } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Colors from "@/constants/colors";
 import { BIBLE_VERSES } from "@/constants/verses";
+import { CHURCH_IMAGES } from "@/constants/images";
+
+const FAVORITES_KEY = "favorites";
 
 function getWidgetDailyVerseIndex(): number {
   const now = new Date();
@@ -35,17 +43,51 @@ export default function DailyScreen() {
   const insets = useSafeAreaInsets();
   const widgetVerseIndex = getWidgetDailyVerseIndex();
   const verse = BIBLE_VERSES[widgetVerseIndex];
+  const [favorites, setFavorites] = useState<number[]>([]);
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
+
+  useFocusEffect(
+    useCallback(() => {
+      AsyncStorage.getItem(FAVORITES_KEY).then((val) => {
+        if (val) setFavorites(JSON.parse(val));
+        else setFavorites([]);
+      });
+    }, []),
+  );
+
+  const handleToggleFavorite = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setFavorites((prev) => {
+      const next = prev.includes(widgetVerseIndex)
+        ? prev.filter((i) => i !== widgetVerseIndex)
+        : [...prev, widgetVerseIndex];
+      AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, [widgetVerseIndex]);
+
+  const handleShare = useCallback(async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      await Share.share({
+        message: `„${verse.text}”\n— ${verse.ref}`,
+      });
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  }, [verse]);
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <LinearGradient
-        colors={Colors.gradient}
-        style={StyleSheet.absoluteFill}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
+      <Image
+        source={CHURCH_IMAGES[4]}
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+        contentFit="cover"
+        contentPosition="center"
+        transition={300}
       />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.overlayHeavy }]} />
 
       <View style={[styles.inner, { paddingTop: topPadding + 8 }]}>
         <Text style={styles.dateText}>{formatDate(new Date())}</Text>
@@ -65,8 +107,8 @@ export default function DailyScreen() {
             <FontAwesome5
               name="cross"
               size={28}
-              color={Colors.goldOverlayFaint}
-              style={{ marginBottom: 24 }}
+              color={Colors.gold}
+              style={{ marginBottom: 24, opacity: 0.8 }}
             />
             <Text style={styles.verseText}>
               {"\u201E"}
@@ -74,6 +116,41 @@ export default function DailyScreen() {
               {"\u201C"}
             </Text>
             <Text style={styles.refText}>{verse.ref}</Text>
+
+            <View style={styles.actionsRow}>
+              <Pressable
+                onPress={handleToggleFavorite}
+                style={({ pressed }) => [
+                  styles.actionBtn,
+                  { opacity: pressed ? 0.6 : 1 },
+                ]}
+                hitSlop={16}
+                accessibilityLabel={
+                  favorites.includes(widgetVerseIndex)
+                    ? "Уклони из омиљених"
+                    : "Додај у омиљене"
+                }
+                accessibilityRole="button"
+              >
+                <Ionicons
+                  name={favorites.includes(widgetVerseIndex) ? "heart" : "heart-outline"}
+                  size={20}
+                  color={favorites.includes(widgetVerseIndex) ? "#E05555" : Colors.gold}
+                />
+              </Pressable>
+              <Pressable
+                onPress={handleShare}
+                style={({ pressed }) => [
+                  styles.actionBtn,
+                  { opacity: pressed ? 0.6 : 1, marginLeft: 12 },
+                ]}
+                hitSlop={16}
+                accessibilityLabel="Подели цитат"
+                accessibilityRole="button"
+              >
+                <Ionicons name="share-social-outline" size={20} color={Colors.gold} />
+              </Pressable>
+            </View>
           </View>
         </View>
       </View>
@@ -84,7 +161,7 @@ export default function DailyScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.containerBg,
+    backgroundColor: Colors.background,
   },
   inner: {
     flex: 1,
@@ -93,7 +170,7 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 17,
     fontFamily: "Inter_400Regular",
-    color: Colors.textSecondary,
+    color: Colors.textMuted,
     letterSpacing: 0.3,
     textAlign: "center",
     marginBottom: 6,
@@ -102,7 +179,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingBottom: 40,
+    paddingBottom: 115,
   },
   labelRow: {
     flexDirection: "row",
@@ -122,7 +199,7 @@ const styles = StyleSheet.create({
   verseText: {
     fontSize: 22,
     fontFamily: "Inter_400Regular",
-    color: Colors.textPrimary,
+    color: Colors.text,
     lineHeight: 36,
     fontStyle: "italic",
     textAlign: "center",
@@ -134,5 +211,20 @@ const styles = StyleSheet.create({
     color: Colors.gold,
     textAlign: "center",
     letterSpacing: 0.5,
+  },
+  actionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 32,
+  },
+  actionBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.iconBackground,
+    borderWidth: 1,
+    borderColor: Colors.separator,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

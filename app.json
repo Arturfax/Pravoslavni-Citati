@@ -41,7 +41,12 @@
       ],
       "expo-font",
       "expo-web-browser",
-      "@bacons/apple-targets",
+      [
+        "@bacons/apple-targets",
+        {
+          "appleTeamId": "9C2NZ9WDK3"
+        }
+      ],
       "./plugins/withAppGroup"
     ],
     "experiments": {

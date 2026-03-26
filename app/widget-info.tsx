@@ -7,11 +7,12 @@ import {
   Pressable,
   Platform,
 } from "react-native";
+import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import Colors from "@/constants/colors";
+import { CHURCH_IMAGES } from "@/constants/images";
 
 const STEPS = [
   {
@@ -43,12 +44,14 @@ export default function WidgetInfoScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={Colors.gradientAlt}
-        style={StyleSheet.absoluteFill}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
+      <Image
+        source={CHURCH_IMAGES[5]}
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+        contentFit="cover"
+        contentPosition="center"
+        transition={300}
       />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.overlayHeavy }]} />
 
       <View style={[styles.header, { paddingTop: topPadding + 12 }]}>
         <Pressable
@@ -144,7 +147,7 @@ export default function WidgetInfoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.containerBg,
+    backgroundColor: Colors.background,
   },
   header: {
     flexDirection: "row",
@@ -162,7 +165,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 17,
     fontFamily: "Inter_600SemiBold",
-    color: Colors.textPrimary,
+    color: Colors.text,
     letterSpacing: 0.2,
   },
   scroll: {
@@ -181,9 +184,9 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: Colors.cardBorderSubtle,
+    backgroundColor: Colors.overlayCard,
     borderWidth: 1,
-    borderColor: Colors.goldOverlayStrong,
+    borderColor: Colors.cardBorder,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 18,
@@ -191,7 +194,7 @@ const styles = StyleSheet.create({
   heroTitle: {
     fontSize: 24,
     fontFamily: "Inter_700Bold",
-    color: Colors.textPrimary,
+    color: Colors.text,
     textAlign: "center",
     marginBottom: 10,
   },
@@ -203,7 +206,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   noteCard: {
-    backgroundColor: Colors.goldOverlay,
+    backgroundColor: Colors.overlayCard,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: Colors.cardBorder,
@@ -216,16 +219,16 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontFamily: "Inter_400Regular",
-    color: Colors.textLight,
+    color: Colors.text,
     lineHeight: 21,
   },
   stepCard: {
     flexDirection: "row",
     marginBottom: 16,
-    backgroundColor: Colors.cardBgSubtle,
+    backgroundColor: Colors.overlayCard,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.cardBorderSubtle,
+    borderColor: Colors.cardBorder,
     padding: 16,
     gap: 14,
   },
@@ -233,9 +236,9 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: Colors.goldOverlayMedium,
+    backgroundColor: Colors.iconBackground,
     borderWidth: 1,
-    borderColor: "rgba(201, 168, 76, 0.3)",
+    borderColor: Colors.separator,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -257,26 +260,26 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 16,
     fontFamily: "Inter_600SemiBold",
-    color: Colors.textPrimary,
+    color: Colors.text,
   },
   stepDesc: {
     fontSize: 14,
     fontFamily: "Inter_400Regular",
-    color: Colors.textSoft,
+    color: Colors.textMuted,
     lineHeight: 21,
   },
   divider: {
     height: 1,
-    backgroundColor: Colors.cardBorderSubtle,
+    backgroundColor: Colors.overlayCard,
     marginVertical: 20,
   },
   tipCard: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: Colors.cardBgFaint,
+    backgroundColor: Colors.overlayCard,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: Colors.cardBorderSubtle,
+    borderColor: Colors.cardBorder,
     padding: 16,
   },
   tipTitle: {
@@ -288,7 +291,7 @@ const styles = StyleSheet.create({
   tipText: {
     fontSize: 14,
     fontFamily: "Inter_400Regular",
-    color: Colors.textSoft,
+    color: Colors.textMuted,
     lineHeight: 21,
   },
 });

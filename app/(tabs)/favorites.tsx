@@ -7,26 +7,34 @@ import {
   StatusBar,
   FlatList,
   Pressable,
+  Share,
 } from "react-native";
+import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Colors from "@/constants/colors";
 import { BIBLE_VERSES } from "@/constants/verses";
+import { CHURCH_IMAGES } from "@/constants/images";
+import WidgetPreferences from "../../modules/widget-preferences";
 
 const FAVORITES_KEY = "favorites";
 
 export default function FavoritesScreen() {
   const insets = useSafeAreaInsets();
   const [favorites, setFavorites] = useState<number[]>([]);
+  const [pinnedIndex, setPinnedIndex] = useState<number | null>(null);
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
 
   useFocusEffect(
     useCallback(() => {
-      AsyncStorage.getItem(FAVORITES_KEY).then((val) => {
+      Promise.all([
+        WidgetPreferences.getPinnedVerseIndex(),
+        AsyncStorage.getItem(FAVORITES_KEY),
+      ]).then(([idx, val]) => {
+        setPinnedIndex(idx ?? null);
         if (val) setFavorites(JSON.parse(val));
         else setFavorites([]);
       });
@@ -42,17 +50,42 @@ export default function FavoritesScreen() {
     });
   }, []);
 
+  const togglePinnedVerse = useCallback((index: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (pinnedIndex === index) {
+      WidgetPreferences.clearPinnedVerse();
+      setPinnedIndex(null);
+    } else {
+      WidgetPreferences.setPinnedVerseIndex(index);
+      setPinnedIndex(index);
+    }
+  }, [pinnedIndex]);
+
+  const shareVerse = useCallback(async (index: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const verse = BIBLE_VERSES[index];
+    try {
+      await Share.share({
+        message: `„${verse.text}”\n— ${verse.ref}`,
+      });
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  }, []);
+
   const favoriteVerses = favorites.map((i) => ({ ...BIBLE_VERSES[i], index: i }));
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
-      <LinearGradient
-        colors={Colors.gradient}
-        style={StyleSheet.absoluteFill}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
+      <Image
+        source={CHURCH_IMAGES[3]} // Use a specific beautiful image for favorites
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+        contentFit="cover"
+        contentPosition="center"
+        transition={300}
       />
+      <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.overlayHeavy }]} />
 
       <View style={[styles.inner, { paddingTop: topPadding + 8 }]}>
         <View style={styles.headerRow}>
@@ -65,7 +98,8 @@ export default function FavoritesScreen() {
             <Ionicons
               name="heart-outline"
               size={48}
-              color={Colors.goldOverlayFaint}
+              color={Colors.gold}
+              style={{ opacity: 0.5 }}
             />
             <Text style={styles.emptyText}>
               Немате омиљених цитата.
@@ -88,18 +122,52 @@ export default function FavoritesScreen() {
                   {"\u201C"}
                 </Text>
                 <Text style={styles.refText}>{item.ref}</Text>
-                <Pressable
-                  onPress={() => removeFavorite(item.index)}
-                  style={({ pressed }) => [
-                    styles.removeBtn,
-                    { opacity: pressed ? 0.5 : 1 },
-                  ]}
-                  hitSlop={10}
-                  accessibilityLabel="Уклони из омиљених"
-                  accessibilityRole="button"
-                >
-                  <Ionicons name="heart-dislike-outline" size={18} color={Colors.textSecondary} />
-                </Pressable>
+                <View style={styles.actionsRow}>
+                  <Pressable
+                    onPress={() => removeFavorite(item.index)}
+                    style={({ pressed }) => [
+                      styles.actionBtn,
+                      { opacity: pressed ? 0.5 : 1 },
+                    ]}
+                    hitSlop={10}
+                    accessibilityLabel="Уклони из омиљених"
+                    accessibilityRole="button"
+                  >
+                    <Ionicons name="heart-dislike-outline" size={22} color={Colors.textMuted} />
+                  </Pressable>
+                  <Pressable
+                    onPress={() => togglePinnedVerse(item.index)}
+                    style={({ pressed }) => [
+                      styles.actionBtn,
+                      { opacity: pressed ? 0.5 : 1, marginLeft: 12 },
+                    ]}
+                    hitSlop={10}
+                    accessibilityLabel={
+                      pinnedIndex === item.index
+                        ? "Уклони цитат са виџета"
+                        : "Постави цитат на виџет"
+                    }
+                    accessibilityRole="button"
+                  >
+                    <MaterialCommunityIcons
+                      name={pinnedIndex === item.index ? "pin" : "pin-outline"}
+                      size={22}
+                      color={Colors.gold}
+                    />
+                  </Pressable>
+                  <Pressable
+                    onPress={() => shareVerse(item.index)}
+                    style={({ pressed }) => [
+                      styles.actionBtn,
+                      { opacity: pressed ? 0.5 : 1, marginLeft: 12 },
+                    ]}
+                    hitSlop={10}
+                    accessibilityLabel="Подели цитат"
+                    accessibilityRole="button"
+                  >
+                    <Ionicons name="share-social-outline" size={22} color={Colors.gold} />
+                  </Pressable>
+                </View>
               </View>
             )}
           />
@@ -112,7 +180,7 @@ export default function FavoritesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.containerBg,
+    backgroundColor: Colors.background,
   },
   inner: {
     flex: 1,
@@ -135,39 +203,39 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingBottom: 60,
+    paddingBottom: 115,
   },
   emptyText: {
     fontSize: 16,
     fontFamily: "Inter_500Medium",
-    color: Colors.textPrimary,
+    color: Colors.text,
     marginTop: 16,
     textAlign: "center",
   },
   emptySubtext: {
     fontSize: 14,
     fontFamily: "Inter_400Regular",
-    color: Colors.textSecondary,
+    color: Colors.textMuted,
     marginTop: 8,
     textAlign: "center",
     paddingHorizontal: 32,
     lineHeight: 22,
   },
   listContent: {
-    paddingBottom: 16,
+    paddingBottom: 115,
   },
   card: {
-    backgroundColor: Colors.cardBgTranslucent,
+    backgroundColor: Colors.overlayCard,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.goldOverlayFaint,
+    borderColor: Colors.cardBorder,
     padding: 20,
     marginBottom: 12,
   },
   verseText: {
     fontSize: 16,
     fontFamily: "Inter_400Regular",
-    color: Colors.textPrimary,
+    color: Colors.text,
     lineHeight: 26,
     fontStyle: "italic",
     textAlign: "center",
@@ -180,9 +248,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     letterSpacing: 0.5,
   },
-  removeBtn: {
-    position: "absolute",
-    top: 12,
-    right: 12,
+  actionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
+  },
+  actionBtn: {
+    marginLeft: 0,
   },
 });
