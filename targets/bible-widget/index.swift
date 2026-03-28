@@ -271,12 +271,40 @@ struct BibleVerseProvider: TimelineProvider {
 private let navy    = Color(red: 0.04, green: 0.05, blue: 0.09)
 private let cream   = Color(red: 0.94, green: 0.92, blue: 0.84)
 private let gold    = Color(red: 0.79, green: 0.66, blue: 0.30)
+private let lightGold = Color(red: 0.63, green: 0.50, blue: 0.18)
 
-private func quoteText(_ text: String, size: CGFloat, alignment: TextAlignment = .center, lineSpacing: CGFloat = 0) -> some View {
+private struct HomeWidgetTheme {
+    let background: Color
+    let quoteColor: Color
+    let accentColor: Color
+    let separatorColor: Color
+
+    static let dark = HomeWidgetTheme(
+        background: navy,
+        quoteColor: cream,
+        accentColor: gold,
+        separatorColor: gold.opacity(0.3)
+    )
+
+    static let light = HomeWidgetTheme(
+        background: .white,
+        quoteColor: lightGold,
+        accentColor: lightGold,
+        separatorColor: lightGold.opacity(0.28)
+    )
+}
+
+private func quoteText(
+    _ text: String,
+    size: CGFloat,
+    color: Color = cream,
+    alignment: TextAlignment = .center,
+    lineSpacing: CGFloat = 0
+) -> some View {
     Text("\u{201E}\(text)\u{201C}")
         .font(.system(size: size))
         .italic()
-        .foregroundColor(cream)
+        .foregroundColor(color)
         .multilineTextAlignment(alignment)
         .lineSpacing(lineSpacing)
         .allowsTightening(true)
@@ -287,26 +315,28 @@ private func quoteText(_ text: String, size: CGFloat, alignment: TextAlignment =
 
 struct HomeSmallView: View {
     let entry: BibleVerseEntry
+    fileprivate let theme: HomeWidgetTheme
+
     var body: some View {
         VStack(spacing: 0) {
             Image(systemName: "cross.fill")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(gold)
+                .foregroundColor(theme.accentColor)
                 .padding(.top, 2)
                 .padding(.bottom, 8)
             Spacer(minLength: 6)
             ViewThatFits(in: .vertical) {
-                quoteText(entry.verseText, size: 11)
-                quoteText(entry.verseText, size: 10)
-                quoteText(entry.verseText, size: 9)
-                quoteText(entry.verseText, size: 8)
-                quoteText(entry.verseText, size: 7)
+                quoteText(entry.verseText, size: 11, color: theme.quoteColor)
+                quoteText(entry.verseText, size: 10, color: theme.quoteColor)
+                quoteText(entry.verseText, size: 9, color: theme.quoteColor)
+                quoteText(entry.verseText, size: 8, color: theme.quoteColor)
+                quoteText(entry.verseText, size: 7, color: theme.quoteColor)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             Spacer(minLength: 6)
             Text(entry.verseRef)
                 .font(.system(size: 10, weight: .semibold))
-                .foregroundColor(gold)
+                .foregroundColor(theme.accentColor)
                 .padding(.bottom, 2)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -317,32 +347,34 @@ struct HomeSmallView: View {
 
 struct HomeMediumView: View {
     let entry: BibleVerseEntry
+    fileprivate let theme: HomeWidgetTheme
+
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 6) {
                 Image(systemName: "cross.fill")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(gold)
+                    .foregroundColor(theme.accentColor)
                 Text("СТИХ ДАНА")
                     .font(.system(size: 10, weight: .semibold))
                     .kerning(1.4)
-                    .foregroundColor(gold)
+                    .foregroundColor(theme.accentColor)
             }
             .padding(.top, 2)
             .padding(.bottom, 10)
             Spacer(minLength: 8)
             ViewThatFits(in: .vertical) {
-                quoteText(entry.verseText, size: 13)
-                quoteText(entry.verseText, size: 12)
-                quoteText(entry.verseText, size: 11)
-                quoteText(entry.verseText, size: 10)
-                quoteText(entry.verseText, size: 9)
+                quoteText(entry.verseText, size: 13, color: theme.quoteColor)
+                quoteText(entry.verseText, size: 12, color: theme.quoteColor)
+                quoteText(entry.verseText, size: 11, color: theme.quoteColor)
+                quoteText(entry.verseText, size: 10, color: theme.quoteColor)
+                quoteText(entry.verseText, size: 9, color: theme.quoteColor)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             Spacer(minLength: 8)
             Text(entry.verseRef)
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(gold)
+                .foregroundColor(theme.accentColor)
                 .padding(.bottom, 2)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -353,36 +385,38 @@ struct HomeMediumView: View {
 
 struct HomeLargeView: View {
     let entry: BibleVerseEntry
+    fileprivate let theme: HomeWidgetTheme
+
     var body: some View {
         VStack(spacing: 0) {
             Image(systemName: "cross.fill")
                 .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(gold)
+                .foregroundColor(theme.accentColor)
                 .padding(.top, 6)
                 .padding(.bottom, 12)
 
             Spacer(minLength: 10)
             ViewThatFits(in: .vertical) {
-                quoteText(entry.verseText, size: 17, lineSpacing: 6)
-                quoteText(entry.verseText, size: 16, lineSpacing: 5)
-                quoteText(entry.verseText, size: 15, lineSpacing: 4)
-                quoteText(entry.verseText, size: 14, lineSpacing: 4)
-                quoteText(entry.verseText, size: 13, lineSpacing: 3)
-                quoteText(entry.verseText, size: 12, lineSpacing: 3)
+                quoteText(entry.verseText, size: 17, color: theme.quoteColor, lineSpacing: 6)
+                quoteText(entry.verseText, size: 16, color: theme.quoteColor, lineSpacing: 5)
+                quoteText(entry.verseText, size: 15, color: theme.quoteColor, lineSpacing: 4)
+                quoteText(entry.verseText, size: 14, color: theme.quoteColor, lineSpacing: 4)
+                quoteText(entry.verseText, size: 13, color: theme.quoteColor, lineSpacing: 3)
+                quoteText(entry.verseText, size: 12, color: theme.quoteColor, lineSpacing: 3)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(.horizontal, 14)
 
             Spacer(minLength: 10)
             Rectangle()
-                .fill(gold.opacity(0.3))
+                .fill(theme.separatorColor)
                 .frame(height: 1)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 14)
 
             Text(entry.verseRef)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(gold)
+                .foregroundColor(theme.accentColor)
                 .padding(.bottom, 4)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -438,14 +472,22 @@ struct LockCircularView: View {
 struct HomeWidgetEntryView: View {
     var entry: BibleVerseEntry
     @Environment(\.widgetFamily) var family
+    @Environment(\.colorScheme) var colorScheme
+
+    private var theme: HomeWidgetTheme {
+        colorScheme == .light ? .light : .dark
+    }
 
     var body: some View {
-        switch family {
-        case .systemSmall:  HomeSmallView(entry: entry)
-        case .systemMedium: HomeMediumView(entry: entry)
-        case .systemLarge:  HomeLargeView(entry: entry)
-        default:            HomeSmallView(entry: entry)
+        Group {
+            switch family {
+            case .systemSmall:  HomeSmallView(entry: entry, theme: theme)
+            case .systemMedium: HomeMediumView(entry: entry, theme: theme)
+            case .systemLarge:  HomeLargeView(entry: entry, theme: theme)
+            default:            HomeSmallView(entry: entry, theme: theme)
+            }
         }
+        .containerBackground(theme.background, for: .widget)
     }
 }
 
@@ -471,7 +513,6 @@ struct BibleHomeWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: BibleVerseProvider()) { entry in
             HomeWidgetEntryView(entry: entry)
-                .containerBackground(navy, for: .widget)
         }
         .contentMarginsDisabled()
         .configurationDisplayName("Стих дана")
