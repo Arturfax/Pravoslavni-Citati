@@ -42,12 +42,14 @@
       "expo-font",
       "expo-web-browser",
       [
+        "./plugins/withAppGroup"
+      ],
+      [
         "@bacons/apple-targets",
         {
           "appleTeamId": "9C2NZ9WDK3"
         }
-      ],
-      "./plugins/withAppGroup"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -71,7 +71,7 @@ export default function HomeScreen() {
       WidgetPreferences.clearPinnedVerse();
       setPinnedIndex(null);
     } else {
-      WidgetPreferences.setPinnedVerseIndex(verseIndex);
+      WidgetPreferences.setPinnedVerse(verseIndex, BIBLE_VERSES[verseIndex]);
       setPinnedIndex(verseIndex);
     }
   }, [pinnedIndex, verseIndex]);

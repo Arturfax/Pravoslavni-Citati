@@ -56,7 +56,7 @@ export default function FavoritesScreen() {
       WidgetPreferences.clearPinnedVerse();
       setPinnedIndex(null);
     } else {
-      WidgetPreferences.setPinnedVerseIndex(index);
+      WidgetPreferences.setPinnedVerse(index, BIBLE_VERSES[index]);
       setPinnedIndex(index);
     }
   }, [pinnedIndex]);

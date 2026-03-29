@@ -216,12 +216,38 @@ private let verses: [(text: String, ref: String)] = [
 ]
 
 private let appGroupId = "group.com.pravoslavnicitati.app"
+private let pinnedIndexKey = "selectedVerseIndex"
+private let pinnedTextKey = "selectedVerseText"
+private let pinnedRefKey = "selectedVerseRef"
+
+private func normalizedVerseIndex(_ index: Int) -> Int {
+    ((index % verses.count) + verses.count) % verses.count
+}
+
+private func getPinnedVerse(from defaults: UserDefaults?) -> (text: String, ref: String)? {
+    guard let defaults else {
+        return nil
+    }
+
+    if let text = defaults.string(forKey: pinnedTextKey),
+       let ref = defaults.string(forKey: pinnedRefKey),
+       !text.isEmpty,
+       !ref.isEmpty {
+        return (text, ref)
+    }
+
+    guard defaults.object(forKey: pinnedIndexKey) != nil else {
+        return nil
+    }
+
+    let index = defaults.integer(forKey: pinnedIndexKey)
+    return verses[normalizedVerseIndex(index)]
+}
 
 private func getVerse(for date: Date) -> (text: String, ref: String) {
     let defaults = UserDefaults(suiteName: appGroupId)
-    if defaults?.bool(forKey: "hasPinnedVerse") == true {
-        let index = defaults?.integer(forKey: "selectedVerseIndex") ?? 0
-        return verses[index % verses.count]
+    if let pinnedVerse = getPinnedVerse(from: defaults) {
+        return pinnedVerse
     }
     let calendar = Calendar.current
     let dayOfYear = calendar.ordinality(of: .day, in: .year, for: date) ?? 1

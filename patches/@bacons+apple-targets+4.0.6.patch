@@ -27,3 +27,76 @@ diff --git a/node_modules/@bacons/apple-targets/build/with-xcode-changes.js b/no
          // Create new build phases
          targetToUpdate.props.buildConfigurationList =
              (0, configuration_list_1.createConfigurationListForType)(project, props);
+diff --git a/node_modules/@bacons/apple-targets/ios/ExtensionStorageModule.swift b/node_modules/@bacons/apple-targets/ios/ExtensionStorageModule.swift
+--- a/node_modules/@bacons/apple-targets/ios/ExtensionStorageModule.swift
++++ b/node_modules/@bacons/apple-targets/ios/ExtensionStorageModule.swift
+@@ -1,16 +1,22 @@
++import Foundation
+ import ExpoModulesCore
+ import WidgetKit
+ 
+ public class ExtensionStorageModule: Module {
+     public func definition() -> ModuleDefinition {
+         Name("ExtensionStorage")
+         
+         Function("remove") { (forKey: String, suiteName: String?) in
+-            UserDefaults(suiteName: suiteName)?.removeObject(forKey: forKey)
++            let userDefaults = UserDefaults(suiteName: suiteName)
++            userDefaults?.removeObject(forKey: forKey)
++            userDefaults?.synchronize()
+         }
+         
+         Function("reloadWidget") { (timeline: String?) in
+-            if let timeline = timeline {
+-                WidgetCenter.shared.reloadTimelines(ofKind: timeline)
+-            } else {
+-                WidgetCenter.shared.reloadAllTimelines()
++            DispatchQueue.main.async {
++                if let timeline = timeline {
++                    WidgetCenter.shared.reloadTimelines(ofKind: timeline)
++                } else {
++                    WidgetCenter.shared.reloadAllTimelines()
++                }
+             }
+         }
+@@ -28,24 +34,30 @@ public class ExtensionStorageModule: Module {
+         Function("setArray") { (forKey: String, data: [[String: Any]], suiteName: String?) -> Bool in
+             // Convert the incoming array of dictionaries directly to JSON data
+             do {
+                 let jsonData = try JSONSerialization.data(withJSONObject: data, options: [])
+-                UserDefaults(suiteName: suiteName)?.set(jsonData, forKey: forKey)
++                let userDefaults = UserDefaults(suiteName: suiteName)
++                userDefaults?.set(jsonData, forKey: forKey)
++                userDefaults?.synchronize()
+                 return true
+             } catch {
+                 // If encoding fails for some reason, return false
+                 return false
+             }
+         }
+         
+         Function("setObject") { (forKey: String, data: [String: Any], suiteName: String?) -> Bool in
+             do {
+                 let jsonData = try JSONSerialization.data(withJSONObject: data, options: [])
+-                UserDefaults(suiteName: suiteName)?.set(jsonData, forKey: forKey)
++                let userDefaults = UserDefaults(suiteName: suiteName)
++                userDefaults?.set(jsonData, forKey: forKey)
++                userDefaults?.synchronize()
+                 return true
+             } catch {
+                 // If encoding fails for some reason, return false
+                 return false
+             }
+         }
+         
+         Function("setInt") { (key: String, value: Int, group: String?) in
+             let userDefaults = UserDefaults(suiteName: group)
+             userDefaults?.set(value, forKey: key)
++            userDefaults?.synchronize()
+         }
+         
+         Function("setString") { (key: String, value: String, group: String?) in
+             let userDefaults = UserDefaults(suiteName: group)
+             userDefaults?.set(value, forKey: key)
++            userDefaults?.synchronize()
+         }        

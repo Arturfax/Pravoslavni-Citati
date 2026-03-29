@@ -1,40 +1,45 @@
 import { ExtensionStorage } from "@bacons/apple-targets";
 
+type PinnedVerse = {
+  text: string;
+  ref: string;
+};
+
 type WidgetPreferencesModule = {
-  setPinnedVerseIndex(index: number): void;
+  setPinnedVerse(index: number, verse: PinnedVerse): void;
   clearPinnedVerse(): void;
   getPinnedVerseIndex(): Promise<number | null>;
 };
 
 const APP_GROUP_ID = "group.com.pravoslavnicitati.app";
 const PINNED_INDEX_KEY = "selectedVerseIndex";
-const HAS_PINNED_KEY = "hasPinnedVerse";
+const PINNED_TEXT_KEY = "selectedVerseText";
+const PINNED_REF_KEY = "selectedVerseRef";
 const storage = new ExtensionStorage(APP_GROUP_ID);
+const WIDGET_KINDS = ["BibleHomeWidget", "BibleLockWidget"] as const;
+
+function reloadWidgets() {
+  WIDGET_KINDS.forEach((kind) => {
+    ExtensionStorage.reloadWidget(kind);
+  });
+}
 
 const WidgetPreferences: WidgetPreferencesModule = {
-  setPinnedVerseIndex(index) {
+  setPinnedVerse(index, verse) {
     storage.set(PINNED_INDEX_KEY, index);
-    storage.set(HAS_PINNED_KEY, 1);
-    ExtensionStorage.reloadWidget();
+    storage.set(PINNED_TEXT_KEY, verse.text);
+    storage.set(PINNED_REF_KEY, verse.ref);
+    reloadWidgets();
   },
 
   clearPinnedVerse() {
     storage.remove(PINNED_INDEX_KEY);
-    storage.remove(HAS_PINNED_KEY);
-    ExtensionStorage.reloadWidget();
+    storage.remove(PINNED_TEXT_KEY);
+    storage.remove(PINNED_REF_KEY);
+    reloadWidgets();
   },
 
   async getPinnedVerseIndex() {
-    const hasPinnedValue = storage.get(HAS_PINNED_KEY);
-    const hasPinned =
-      hasPinnedValue === "1" ||
-      hasPinnedValue === "true" ||
-      hasPinnedValue === "YES";
-
-    if (!hasPinned) {
-      return null;
-    }
-
     const rawValue = storage.get(PINNED_INDEX_KEY);
     if (rawValue == null) {
       return null;
