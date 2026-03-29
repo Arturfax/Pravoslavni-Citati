@@ -45,6 +45,9 @@
         "./plugins/withAppGroup"
       ],
       [
+        "./plugins/withExtensionStorageSync"
+      ],
+      [
         "@bacons/apple-targets",
         {
           "appleTeamId": "9C2NZ9WDK3"
