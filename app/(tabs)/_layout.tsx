@@ -1,18 +1,138 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Tabs } from "expo-router";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import Colors from "@/constants/colors";
-import { PanResponder, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
+import * as Haptics from "expo-haptics";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  runOnJS,
+  type SharedValue,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
+
+const TRACK_HORIZONTAL_PADDING = 5;
+const SLOT_HORIZONTAL_PADDING = 4;
+const SPRING_CONFIG = {
+  damping: 15,
+  stiffness: 180,
+  mass: 0.8,
+};
+
+function clamp(value: number, min: number, max: number) {
+  "worklet";
+  return Math.min(Math.max(value, min), max);
+}
+
+function AnimatedTabButton({
+  accessibilityLabel,
+  focused,
+  icon,
+  index,
+  label,
+  onLongPress,
+  onPress,
+  pillIndex,
+  arrivalBoost,
+  testID,
+}: {
+  accessibilityLabel?: string;
+  focused: boolean;
+  icon: ReactNode;
+  index: number;
+  label: string;
+  onLongPress: () => void;
+  onPress: () => void;
+  pillIndex: SharedValue<number>;
+  arrivalBoost: SharedValue<number>;
+  testID?: string;
+}) {
+  const animatedIconStyle = useAnimatedStyle(() => {
+    const distance = Math.min(Math.abs(pillIndex.value - index), 1);
+    const proximity = 1 - distance;
+    const scale = 1 + proximity * 0.15 + arrivalBoost.value * proximity * 0.45;
+
+    return {
+      transform: [{ scale }],
+    };
+  });
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={focused ? { selected: true } : {}}
+      accessibilityLabel={accessibilityLabel}
+      onLongPress={onLongPress}
+      onPress={onPress}
+      style={styles.tabButton}
+      testID={testID}
+    >
+      <View style={styles.tabButtonContent}>
+        <Animated.View style={[styles.iconWrap, animatedIconStyle]}>
+          {icon}
+        </Animated.View>
+        <Text
+          numberOfLines={1}
+          style={[styles.tabLabel, focused && styles.tabLabelActive]}
+        >
+          {label}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
 
 function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const [tabBarWidth, setTabBarWidth] = useState(0);
+  const routeCount = state.routes.length;
+  const trackWidth = Math.max(tabBarWidth - TRACK_HORIZONTAL_PADDING * 2, 0);
+  const slotWidth = routeCount > 0 ? trackWidth / routeCount : 0;
+  const pillWidth = Math.max(slotWidth - SLOT_HORIZONTAL_PADDING * 2, 0);
+
+  const tabPositions = useMemo(
+    () =>
+      state.routes.map(
+        (_, index) => TRACK_HORIZONTAL_PADDING + slotWidth * index + slotWidth / 2,
+      ),
+    [slotWidth, state.routes],
+  );
+  const pillLeftPositions = useMemo(
+    () => tabPositions.map((center) => center - pillWidth / 2),
+    [pillWidth, tabPositions],
+  );
+  const inputRange = useMemo(
+    () => state.routes.map((_, index) => index),
+    [state.routes],
+  );
+
+  const pillIndex = useSharedValue(state.index);
+  const gestureStartIndex = useSharedValue(state.index);
+  const isDragging = useSharedValue(0);
+  const arrivalBoost = useSharedValue(0);
+
+  const animatePillToIndex = useCallback(
+    (nextIndex: number) => {
+      pillIndex.value = withSpring(nextIndex, SPRING_CONFIG);
+      arrivalBoost.value = 0.05;
+      arrivalBoost.value = withSpring(0, SPRING_CONFIG);
+    },
+    [arrivalBoost, pillIndex],
+  );
+
   const navigateToIndex = useCallback(
     (nextIndex: number) => {
       if (nextIndex < 0 || nextIndex >= state.routes.length || nextIndex === state.index) {
         return;
       }
+
+      void Haptics.selectionAsync();
 
       const route = state.routes[nextIndex];
       const event = navigation.emit({
@@ -28,130 +148,195 @@ function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     [navigation, state.index, state.routes],
   );
 
-  const panResponder = useMemo(
+  useEffect(() => {
+    if (isDragging.value === 0) {
+      animatePillToIndex(state.index);
+    }
+  }, [animatePillToIndex, isDragging, state.index]);
+
+  const panGesture = useMemo(
     () =>
-      PanResponder.create({
-        onMoveShouldSetPanResponder: (_, gestureState) =>
-          Math.abs(gestureState.dx) > 10 &&
-          Math.abs(gestureState.dx) > Math.abs(gestureState.dy),
-        onPanResponderRelease: (_, gestureState) => {
-          if (gestureState.dx <= -28) {
-            navigateToIndex(state.index + 1);
+      Gesture.Pan()
+        .activeOffsetX([-8, 8])
+        .failOffsetY([-12, 12])
+        .onBegin(() => {
+          gestureStartIndex.value = pillIndex.value;
+          isDragging.value = 1;
+        })
+        .onUpdate((event) => {
+          if (Math.abs(event.translationX) <= Math.abs(event.translationY) || slotWidth <= 0) {
             return;
           }
 
-          if (gestureState.dx >= 28) {
-            navigateToIndex(state.index - 1);
+          const nextIndex = clamp(
+            gestureStartIndex.value + event.translationX / slotWidth,
+            0,
+            routeCount - 1,
+          );
+          pillIndex.value = nextIndex;
+        })
+        .onEnd((event) => {
+          isDragging.value = 0;
+
+          let destinationIndex = state.index;
+          if (Math.abs(event.translationX) > Math.abs(event.translationY)) {
+            if (event.translationX < -30 && state.index > 0) {
+              destinationIndex = state.index - 1;
+            } else if (event.translationX > 30 && state.index < routeCount - 1) {
+              destinationIndex = state.index + 1;
+            }
           }
-        },
-      }),
-    [navigateToIndex, state.index],
+
+          pillIndex.value = withSpring(destinationIndex, SPRING_CONFIG);
+          arrivalBoost.value = 0.05;
+          arrivalBoost.value = withSpring(0, SPRING_CONFIG);
+
+          if (destinationIndex !== state.index) {
+            runOnJS(navigateToIndex)(destinationIndex);
+          }
+        })
+        .onFinalize(() => {
+          isDragging.value = 0;
+        }),
+    [
+      arrivalBoost,
+      gestureStartIndex,
+      isDragging,
+      navigateToIndex,
+      pillIndex,
+      routeCount,
+      slotWidth,
+      state.index,
+    ],
   );
 
+  const activePillStyle = useAnimatedStyle(() => {
+    const pillLeft = pillLeftPositions.length > 1
+      ? interpolate(
+        pillIndex.value,
+        inputRange,
+        pillLeftPositions,
+        Extrapolation.CLAMP,
+      )
+      : pillLeftPositions[0] ?? TRACK_HORIZONTAL_PADDING + SLOT_HORIZONTAL_PADDING;
+
+    const localProgress = isDragging.value
+      ? ((pillIndex.value % 1) + 1) % 1
+      : 0;
+    const squeeze = Math.sin(localProgress * Math.PI);
+    const scaleX = (isDragging.value ? 1 - 0.3 * squeeze : 1) + arrivalBoost.value;
+    const scaleY = (isDragging.value ? 1 - 0.15 * squeeze : 1) + arrivalBoost.value * 0.55;
+
+    return {
+      width: pillWidth,
+      transform: [
+        { translateX: pillLeft },
+        { scaleX },
+        { scaleY },
+      ],
+    };
+  });
+
   return (
-    <View style={styles.tabBarShell} {...panResponder.panHandlers}>
-      <BlurView
-        tint="dark"
-        intensity={34}
-        style={[StyleSheet.absoluteFill, styles.blurBackground]}
-      />
-      <View pointerEvents="none" style={styles.shellTone} />
-      <LinearGradient
-        pointerEvents="none"
-        colors={[
-          "rgba(255, 255, 255, 0.16)",
-          "rgba(255, 255, 255, 0.05)",
-          "rgba(18, 20, 28, 0.18)",
-        ]}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-        style={styles.shellGlassGradient}
-      />
-      <View pointerEvents="none" style={styles.shellInnerStroke} />
+    <GestureDetector gesture={panGesture}>
+      <View
+        style={styles.tabBarShell}
+        onLayout={({ nativeEvent }) => {
+          const nextWidth = Math.round(nativeEvent.layout.width);
+          if (nextWidth > 0 && nextWidth !== tabBarWidth) {
+            setTabBarWidth(nextWidth);
+          }
+        }}
+      >
+        <BlurView
+          tint="dark"
+          intensity={34}
+          style={[StyleSheet.absoluteFill, styles.blurBackground]}
+        />
+        <View pointerEvents="none" style={styles.shellTone} />
+        <LinearGradient
+          pointerEvents="none"
+          colors={[
+            "rgba(255, 255, 255, 0.16)",
+            "rgba(255, 255, 255, 0.05)",
+            "rgba(18, 20, 28, 0.18)",
+          ]}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={styles.shellGlassGradient}
+        />
+        <View pointerEvents="none" style={styles.shellInnerStroke} />
 
-      <View pointerEvents="none" style={styles.activePillTrack}>
-        {state.routes.map((route, index) => {
-          const focused = index === state.index;
+        <View pointerEvents="none" style={styles.activePillTrack}>
+          <Animated.View style={[styles.activePill, activePillStyle]}>
+            <BlurView
+              tint="light"
+              intensity={42}
+              style={StyleSheet.absoluteFill}
+            />
+            <LinearGradient
+              colors={[
+                "rgba(255, 255, 255, 0.20)",
+                "rgba(255, 249, 235, 0.10)",
+                "rgba(38, 32, 18, 0.24)",
+              ]}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 1 }}
+              style={styles.activePillFill}
+            />
+            <View style={styles.activePillStroke} />
+            <View style={styles.activePillInnerStroke} />
+          </Animated.View>
+        </View>
 
-          return (
-            <View key={route.key} style={styles.activePillSlot}>
-              {focused ? (
-                <View style={styles.activePill}>
-                  <BlurView
-                    tint="light"
-                    intensity={42}
-                    style={StyleSheet.absoluteFill}
-                  />
-                  <LinearGradient
-                    colors={[
-                      "rgba(255, 255, 255, 0.20)",
-                      "rgba(255, 249, 235, 0.10)",
-                      "rgba(38, 32, 18, 0.24)",
-                    ]}
-                    start={{ x: 0.5, y: 0 }}
-                    end={{ x: 0.5, y: 1 }}
-                    style={styles.activePillFill}
-                  />
-                  <View style={styles.activePillStroke} />
-                  <View style={styles.activePillInnerStroke} />
-                </View>
-              ) : null}
-            </View>
-          );
-        })}
+        <View style={styles.tabRow}>
+          {state.routes.map((route, index) => {
+            const focused = index === state.index;
+            const options = descriptors[route.key]?.options;
+            const color = focused ? Colors.gold : Colors.textMuted;
+            const label =
+              typeof options?.tabBarLabel === "string"
+                ? options.tabBarLabel
+                : typeof options?.title === "string"
+                  ? options.title
+                  : route.name;
+
+            const icon =
+              typeof options?.tabBarIcon === "function"
+                ? options.tabBarIcon({ focused, color, size: 24 })
+                : null;
+
+            const onPress = () => {
+              animatePillToIndex(index);
+              navigateToIndex(index);
+            };
+
+            const onLongPress = () => {
+              navigation.emit({
+                type: "tabLongPress",
+                target: route.key,
+              });
+            };
+
+            return (
+              <AnimatedTabButton
+                key={route.key}
+                accessibilityLabel={options?.tabBarAccessibilityLabel}
+                focused={focused}
+                icon={icon}
+                index={index}
+                label={label}
+                onLongPress={onLongPress}
+                onPress={onPress}
+                pillIndex={pillIndex}
+                arrivalBoost={arrivalBoost}
+                testID={options?.tabBarButtonTestID}
+              />
+            );
+          })}
+        </View>
       </View>
-
-      <View style={styles.tabRow}>
-        {state.routes.map((route, index) => {
-          const focused = index === state.index;
-          const options = descriptors[route.key]?.options;
-          const color = focused ? Colors.gold : Colors.textMuted;
-          const label =
-            typeof options?.tabBarLabel === "string"
-              ? options.tabBarLabel
-              : typeof options?.title === "string"
-                ? options.title
-                : route.name;
-
-          const icon =
-            typeof options?.tabBarIcon === "function"
-              ? options.tabBarIcon({ focused, color, size: 24 })
-              : null;
-
-          const onPress = () => navigateToIndex(index);
-
-          const onLongPress = () => {
-            navigation.emit({
-              type: "tabLongPress",
-              target: route.key,
-            });
-          };
-
-          return (
-            <Pressable
-              key={route.key}
-              accessibilityRole="button"
-              accessibilityState={focused ? { selected: true } : {}}
-              accessibilityLabel={options?.tabBarAccessibilityLabel}
-              onLongPress={onLongPress}
-              onPress={onPress}
-              style={styles.tabButton}
-              testID={options?.tabBarButtonTestID}
-            >
-              <View style={styles.tabButtonContent}>
-                <View style={styles.iconWrap}>{icon}</View>
-                <Text
-                  numberOfLines={1}
-                  style={[styles.tabLabel, focused && styles.tabLabelActive]}
-                >
-                  {label}
-                </Text>
-              </View>
-            </Pressable>
-          );
-        })}
-      </View>
-    </View>
+    </GestureDetector>
   );
 }
 
@@ -229,16 +414,12 @@ const styles = StyleSheet.create({
   },
   activePillTrack: {
     ...StyleSheet.absoluteFillObject,
-    flexDirection: "row",
-    paddingHorizontal: 5,
     zIndex: 0,
   },
-  activePillSlot: {
-    flex: 1,
-    paddingHorizontal: 4,
-  },
   activePill: {
-    flex: 1,
+    position: "absolute",
+    top: 0,
+    bottom: 0,
     borderRadius: 999,
     overflow: "hidden",
     shadowColor: "rgba(0, 0, 0, 0.45)",
@@ -269,12 +450,12 @@ const styles = StyleSheet.create({
   tabRow: {
     flex: 1,
     flexDirection: "row",
-    paddingHorizontal: 5,
+    paddingHorizontal: TRACK_HORIZONTAL_PADDING,
     zIndex: 1,
   },
   tabButton: {
     flex: 1,
-    paddingHorizontal: 4,
+    paddingHorizontal: SLOT_HORIZONTAL_PADDING,
   },
   tabButtonContent: {
     flex: 1,
