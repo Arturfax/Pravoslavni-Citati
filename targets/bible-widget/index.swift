@@ -292,49 +292,73 @@ struct BibleVerseProvider: TimelineProvider {
     }
 }
 
-// MARK: - Colors
+// MARK: - Widget Theme
 
-private let navy = Color(red: 0.05, green: 0.05, blue: 0.10)
-private let navyDeep = Color(red: 0.08, green: 0.08, blue: 0.14)
-private let cream = Color(red: 0.93, green: 0.90, blue: 0.82)
-private let creamWarm = Color(red: 0.96, green: 0.94, blue: 0.87)
-private let gold = Color(red: 0.82, green: 0.67, blue: 0.27)
-private let lightGold = Color(red: 0.60, green: 0.45, blue: 0.13)
-private let warmInk = Color(red: 0.20, green: 0.16, blue: 0.11)
+private let midnightInk = Color(red: 0.035, green: 0.045, blue: 0.075)
+private let cathedralBlue = Color(red: 0.065, green: 0.095, blue: 0.155)
+private let candleBurgundy = Color(red: 0.16, green: 0.08, blue: 0.105)
+private let cream = Color(red: 0.94, green: 0.91, blue: 0.82)
+private let parchment = Color(red: 0.96, green: 0.93, blue: 0.84)
+private let parchmentDeep = Color(red: 0.84, green: 0.77, blue: 0.62)
+private let gold = Color(red: 0.84, green: 0.68, blue: 0.29)
+private let brightGold = Color(red: 0.96, green: 0.84, blue: 0.43)
+private let antiqueGold = Color(red: 0.54, green: 0.38, blue: 0.10)
+private let warmInk = Color(red: 0.18, green: 0.13, blue: 0.08)
 
 private struct HomeWidgetTheme {
     let background: Color
     let gradientTop: Color
+    let gradientMiddle: Color
     let gradientBottom: Color
-    let glowColor: Color
     let quoteColor: Color
+    let titleColor: Color
+    let secondaryTextColor: Color
     let accentColor: Color
     let accentHighlight: Color
+    let borderColor: Color
+    let hairlineColor: Color
     let separatorColor: Color
     let illustrationColor: Color
+    let shadowColor: Color
+    let lockTextColor: Color
+    let lockSecondaryColor: Color
 
     static let dark = HomeWidgetTheme(
-        background: navy,
-        gradientTop: Color(red: 0.08, green: 0.08, blue: 0.13),
-        gradientBottom: navyDeep,
-        glowColor: cream,
+        background: midnightInk,
+        gradientTop: cathedralBlue,
+        gradientMiddle: candleBurgundy,
+        gradientBottom: midnightInk,
         quoteColor: cream,
+        titleColor: brightGold,
+        secondaryTextColor: cream.opacity(0.76),
         accentColor: gold,
-        accentHighlight: Color(red: 0.91, green: 0.80, blue: 0.44),
-        separatorColor: gold.opacity(0.3),
-        illustrationColor: gold.opacity(0.82)
+        accentHighlight: brightGold,
+        borderColor: gold.opacity(0.72),
+        hairlineColor: cream.opacity(0.18),
+        separatorColor: gold.opacity(0.36),
+        illustrationColor: gold.opacity(0.58),
+        shadowColor: .black,
+        lockTextColor: cream,
+        lockSecondaryColor: brightGold
     )
 
     static let light = HomeWidgetTheme(
-        background: creamWarm,
-        gradientTop: Color(red: 0.97, green: 0.95, blue: 0.89),
-        gradientBottom: Color(red: 0.93, green: 0.89, blue: 0.78),
-        glowColor: .white,
+        background: parchment,
+        gradientTop: Color(red: 0.995, green: 0.975, blue: 0.91),
+        gradientMiddle: parchment,
+        gradientBottom: parchmentDeep,
         quoteColor: warmInk,
-        accentColor: lightGold,
-        accentHighlight: Color(red: 0.80, green: 0.64, blue: 0.23),
-        separatorColor: lightGold.opacity(0.28),
-        illustrationColor: lightGold.opacity(0.66)
+        titleColor: antiqueGold,
+        secondaryTextColor: warmInk.opacity(0.68),
+        accentColor: antiqueGold,
+        accentHighlight: Color(red: 0.78, green: 0.56, blue: 0.16),
+        borderColor: antiqueGold.opacity(0.46),
+        hairlineColor: .white.opacity(0.62),
+        separatorColor: antiqueGold.opacity(0.30),
+        illustrationColor: antiqueGold.opacity(0.38),
+        shadowColor: Color(red: 0.34, green: 0.25, blue: 0.12),
+        lockTextColor: warmInk,
+        lockSecondaryColor: antiqueGold
     )
 }
 
@@ -342,64 +366,38 @@ private struct HomeWidgetBackgroundView: View {
     let theme: HomeWidgetTheme
     let family: WidgetFamily
 
-    private var isStyledCard: Bool {
-        family == .systemSmall || family == .systemMedium || family == .systemLarge
-    }
-
-    private var glowRadius: CGFloat {
-        switch family {
-        case .systemSmall:
-            return 145
-        case .systemMedium:
-            return 300
-        case .systemLarge:
-            return 430
-        default:
-            return 220
-        }
-    }
-
-    private var glowOffset: CGSize {
-        switch family {
-        case .systemSmall:
-            return CGSize(width: 18, height: -18)
-        case .systemMedium:
-            return CGSize(width: 34, height: -30)
-        case .systemLarge:
-            return CGSize(width: 48, height: -52)
-        default:
-            return CGSize(width: 26, height: -24)
-        }
-    }
-
     var body: some View {
         ZStack {
-            if isStyledCard {
-                LinearGradient(
-                    colors: [theme.gradientTop, theme.gradientBottom],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
+            LinearGradient(
+                colors: [theme.gradientTop, theme.gradientMiddle, theme.gradientBottom],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
 
-                RadialGradient(
-                    colors: [theme.glowColor.opacity(0.28), .clear],
-                    center: .topTrailing,
-                    startRadius: 2,
-                    endRadius: glowRadius
-                )
-                .offset(
-                    x: glowOffset.width,
-                    y: glowOffset.height
-                )
+            GeometryReader { proxy in
+                let width = proxy.size.width
+                let height = proxy.size.height
+                let gap: CGFloat = family == .systemSmall ? 22 : 32
 
-                LinearGradient(
-                    colors: [theme.background.opacity(0.58), .clear],
-                    startPoint: .bottomLeading,
-                    endPoint: .topTrailing
-                )
-            } else {
-                theme.background
+                Path { path in
+                    for offset in stride(from: -height, through: width, by: gap) {
+                        path.move(to: CGPoint(x: offset, y: height))
+                        path.addLine(to: CGPoint(x: offset + height, y: 0))
+                    }
+                }
+                .stroke(theme.hairlineColor.opacity(0.34), lineWidth: 0.7)
             }
+            .opacity(family == .systemSmall ? 0.32 : 0.42)
+
+            LinearGradient(
+                colors: [
+                    .clear,
+                    theme.background.opacity(0.18),
+                    theme.shadowColor.opacity(0.20)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
         }
     }
 }
@@ -596,6 +594,55 @@ private struct OrthodoxCrossIcon: View {
             .shadow(color: bottomColor.opacity(0.18), radius: minSide * 0.05, y: minSide * 0.015)
         }
         .aspectRatio(0.82, contentMode: .fit)
+    }
+}
+
+private struct CrossSeal: View {
+    let theme: HomeWidgetTheme
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            theme.hairlineColor.opacity(0.52),
+                            theme.background.opacity(0.18)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+
+            Circle()
+                .stroke(theme.borderColor.opacity(0.74), lineWidth: 0.9)
+
+            Circle()
+                .stroke(theme.hairlineColor.opacity(0.54), lineWidth: 0.6)
+                .padding(4)
+
+            OrthodoxCrossIcon(topColor: theme.accentHighlight, bottomColor: theme.accentColor)
+                .padding(7)
+        }
+        .shadow(color: theme.shadowColor.opacity(0.18), radius: 7, x: 0, y: 3)
+    }
+}
+
+private struct OrnamentalDivider: View {
+    let theme: HomeWidgetTheme
+    let compact: Bool
+
+    var body: some View {
+        HStack(spacing: compact ? 5 : 7) {
+            Capsule(style: .continuous)
+                .fill(theme.separatorColor)
+            Circle()
+                .fill(theme.accentColor.opacity(0.78))
+                .frame(width: compact ? 3 : 4, height: compact ? 3 : 4)
+            Capsule(style: .continuous)
+                .fill(theme.separatorColor)
+        }
+        .frame(height: compact ? 3 : 4)
     }
 }
 
@@ -838,6 +885,119 @@ private struct ChurchLineArt: View {
     }
 }
 
+private struct SimpleChurchLineArt: View {
+    let color: Color
+
+    var body: some View {
+        GeometryReader { proxy in
+            let width = proxy.size.width
+            let height = proxy.size.height
+            let outline = StrokeStyle(
+                lineWidth: max(width * 0.009, 1),
+                lineCap: .round,
+                lineJoin: .round
+            )
+            let detail = StrokeStyle(
+                lineWidth: max(width * 0.0048, 0.7),
+                lineCap: .round,
+                lineJoin: .round
+            )
+
+            ZStack {
+                Path { path in
+                    path.move(to: CGPoint(x: width * 0.08, y: height * 0.78))
+                    path.addLine(to: CGPoint(x: width * 0.92, y: height * 0.78))
+                    path.move(to: CGPoint(x: width * 0.12, y: height * 0.68))
+                    path.addLine(to: CGPoint(x: width * 0.88, y: height * 0.68))
+
+                    path.addRoundedRect(
+                        in: CGRect(x: width * 0.25, y: height * 0.43, width: width * 0.50, height: height * 0.35),
+                        cornerSize: CGSize(width: width * 0.012, height: width * 0.012)
+                    )
+                    path.addRoundedRect(
+                        in: CGRect(x: width * 0.11, y: height * 0.50, width: width * 0.16, height: height * 0.28),
+                        cornerSize: CGSize(width: width * 0.01, height: width * 0.01)
+                    )
+                    path.addRoundedRect(
+                        in: CGRect(x: width * 0.73, y: height * 0.50, width: width * 0.16, height: height * 0.28),
+                        cornerSize: CGSize(width: width * 0.01, height: width * 0.01)
+                    )
+
+                    addDomeOutline(
+                        to: &path,
+                        leftX: width * 0.30,
+                        rightX: width * 0.70,
+                        baseY: height * 0.43,
+                        apexY: height * 0.14
+                    )
+                    addDomeOutline(
+                        to: &path,
+                        leftX: width * 0.13,
+                        rightX: width * 0.27,
+                        baseY: height * 0.50,
+                        apexY: height * 0.31
+                    )
+                    addDomeOutline(
+                        to: &path,
+                        leftX: width * 0.73,
+                        rightX: width * 0.87,
+                        baseY: height * 0.50,
+                        apexY: height * 0.31
+                    )
+
+                    addArch(to: &path, x: width * 0.41, width: width * 0.18, top: height * 0.58, bottom: height * 0.78)
+                    addArch(to: &path, x: width * 0.17, width: width * 0.06, top: height * 0.63, bottom: height * 0.78)
+                    addArch(to: &path, x: width * 0.77, width: width * 0.06, top: height * 0.63, bottom: height * 0.78)
+                }
+                .stroke(color.opacity(0.58), style: outline)
+
+                Path { path in
+                    path.move(to: CGPoint(x: width * 0.33, y: height * 0.52))
+                    path.addLine(to: CGPoint(x: width * 0.67, y: height * 0.52))
+                    path.move(to: CGPoint(x: width * 0.36, y: height * 0.47))
+                    path.addLine(to: CGPoint(x: width * 0.64, y: height * 0.47))
+                    path.move(to: CGPoint(x: width * 0.31, y: height * 0.68))
+                    path.addLine(to: CGPoint(x: width * 0.69, y: height * 0.68))
+                    path.move(to: CGPoint(x: width * 0.14, y: height * 0.61))
+                    path.addLine(to: CGPoint(x: width * 0.26, y: height * 0.61))
+                    path.move(to: CGPoint(x: width * 0.74, y: height * 0.61))
+                    path.addLine(to: CGPoint(x: width * 0.86, y: height * 0.61))
+
+                    for x in [0.38, 0.62] {
+                        addArchedWindow(
+                            to: &path,
+                            x: width * x,
+                            y: height * 0.55,
+                            width: width * 0.055,
+                            height: height * 0.13
+                        )
+                    }
+
+                    path.move(to: CGPoint(x: width * 0.50, y: height * 0.43))
+                    path.addLine(to: CGPoint(x: width * 0.50, y: height * 0.17))
+                    path.move(to: CGPoint(x: width * 0.39, y: height * 0.43))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.50, y: height * 0.17),
+                        control: CGPoint(x: width * 0.42, y: height * 0.27)
+                    )
+                    path.move(to: CGPoint(x: width * 0.61, y: height * 0.43))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.50, y: height * 0.17),
+                        control: CGPoint(x: width * 0.58, y: height * 0.27)
+                    )
+
+                    addRosette(to: &path, centerX: width * 0.50, centerY: height * 0.60, radius: width * 0.028)
+
+                    addLineCross(to: &path, centerX: width * 0.50, baseY: height * 0.16, size: height * 0.07)
+                    addLineCross(to: &path, centerX: width * 0.20, baseY: height * 0.31, size: height * 0.045)
+                    addLineCross(to: &path, centerX: width * 0.80, baseY: height * 0.31, size: height * 0.045)
+                }
+                .stroke(color.opacity(0.30), style: detail)
+            }
+        }
+    }
+}
+
 // MARK: - Home Screen Views
 
 struct HomeSmallView: View {
@@ -846,41 +1006,44 @@ struct HomeSmallView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            OrthodoxCrossIcon(topColor: theme.accentHighlight, bottomColor: theme.accentColor)
-                .frame(width: 11, height: 13)
-                .padding(.top, 2)
+            CrossSeal(theme: theme)
+                .frame(width: 24, height: 24)
 
             Text("СТИХ ДАНА")
-                .font(.system(size: 10, weight: .medium, design: .rounded))
-                .kerning(2.6)
-                .foregroundColor(theme.accentColor)
-                .padding(.top, 8)
+                .font(.system(size: 8.8, weight: .semibold, design: .rounded))
+                .kerning(1.7)
+                .foregroundColor(theme.titleColor)
+                .padding(.top, 5)
 
-            Spacer(minLength: 10)
+            OrnamentalDivider(theme: theme, compact: true)
+                .frame(width: 58)
+                .padding(.top, 5)
+
+            Spacer(minLength: 6)
 
             ViewThatFits(in: .vertical) {
-                homeQuoteText(entry.verseText, size: 15, color: theme.quoteColor, alignment: .center, lineSpacing: 4, lineLimit: 6)
-                homeQuoteText(entry.verseText, size: 14, color: theme.quoteColor, alignment: .center, lineSpacing: 4, lineLimit: 6)
-                homeQuoteText(entry.verseText, size: 13, color: theme.quoteColor, alignment: .center, lineSpacing: 3, lineLimit: 6)
-                homeQuoteText(entry.verseText, size: 12, color: theme.quoteColor, alignment: .center, lineSpacing: 3, lineLimit: 6)
+                homeQuoteText(entry.verseText, size: 14, color: theme.quoteColor, alignment: .center, lineSpacing: 3, lineLimit: 5)
+                homeQuoteText(entry.verseText, size: 13, color: theme.quoteColor, alignment: .center, lineSpacing: 3, lineLimit: 5)
+                homeQuoteText(entry.verseText, size: 12, color: theme.quoteColor, alignment: .center, lineSpacing: 2, lineLimit: 5)
                 homeQuoteText(entry.verseText, size: 11, color: theme.quoteColor, alignment: .center, lineSpacing: 2, lineLimit: 6)
-                homeQuoteText(entry.verseText, size: 10, color: theme.quoteColor, alignment: .center, lineSpacing: 2, lineLimit: 6)
+                homeQuoteText(entry.verseText, size: 10, color: theme.quoteColor, alignment: .center, lineSpacing: 1, lineLimit: 6)
                 homeQuoteText(entry.verseText, size: 9, color: theme.quoteColor, alignment: .center, lineSpacing: 1, lineLimit: 7)
             }
+            .shadow(color: theme.shadowColor.opacity(0.18), radius: 4, x: 0, y: 1)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            Spacer(minLength: 10)
+            Spacer(minLength: 6)
 
             Text(entry.verseRef)
-                .font(.system(size: 9.5, weight: .medium, design: .rounded))
-                .foregroundColor(theme.accentColor)
+                .font(.system(size: 9.2, weight: .semibold, design: .rounded))
+                .foregroundColor(theme.secondaryTextColor)
                 .lineLimit(1)
-                .minimumScaleFactor(0.78)
-                .padding(.bottom, 2)
+                .minimumScaleFactor(0.74)
+                .padding(.bottom, 1)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, 14)
-        .padding(.vertical, 14)
+        .padding(.horizontal, 17)
+        .padding(.vertical, 15)
     }
 }
 
@@ -890,50 +1053,55 @@ struct HomeMediumView: View {
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            ChurchLineArt(color: theme.illustrationColor)
-                .frame(width: 228, height: 176)
-                .offset(x: 24, y: 18)
+            SimpleChurchLineArt(color: theme.illustrationColor)
+                .frame(width: 176, height: 132)
+                .offset(x: 44, y: 28)
 
             VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 10) {
-                    OrthodoxCrossIcon(topColor: theme.accentHighlight, bottomColor: theme.accentColor)
-                        .frame(width: 26, height: 32)
+                HStack(alignment: .center, spacing: 10) {
+                    CrossSeal(theme: theme)
+                        .frame(width: 31, height: 31)
 
-                    Text("СТИХ ДАНА")
-                        .font(.system(size: 10.5, weight: .medium, design: .rounded))
-                        .kerning(2.4)
-                        .foregroundColor(theme.accentColor)
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("СТИХ ДАНА")
+                            .font(.system(size: 10.4, weight: .semibold, design: .rounded))
+                            .kerning(2.2)
+                            .foregroundColor(theme.titleColor)
+
+                        OrnamentalDivider(theme: theme, compact: true)
+                            .frame(width: 84)
+                    }
+
+                    Spacer(minLength: 12)
                 }
-                .padding(.top, 2)
 
-                Spacer(minLength: 12)
+                Spacer(minLength: 10)
 
                 ViewThatFits(in: .vertical) {
-                    homeQuoteText(entry.verseText, size: 18, color: theme.quoteColor, alignment: .leading, lineSpacing: 6, lineLimit: 4)
-                    homeQuoteText(entry.verseText, size: 17, color: theme.quoteColor, alignment: .leading, lineSpacing: 5, lineLimit: 4)
-                    homeQuoteText(entry.verseText, size: 16, color: theme.quoteColor, alignment: .leading, lineSpacing: 5, lineLimit: 4)
-                    homeQuoteText(entry.verseText, size: 15, color: theme.quoteColor, alignment: .leading, lineSpacing: 4, lineLimit: 4)
-                    homeQuoteText(entry.verseText, size: 14, color: theme.quoteColor, alignment: .leading, lineSpacing: 4, lineLimit: 4)
-                    homeQuoteText(entry.verseText, size: 13, color: theme.quoteColor, alignment: .leading, lineSpacing: 3, lineLimit: 5)
-                    homeQuoteText(entry.verseText, size: 12, color: theme.quoteColor, alignment: .leading, lineSpacing: 3, lineLimit: 5)
-                    homeQuoteText(entry.verseText, size: 11, color: theme.quoteColor, alignment: .leading, lineSpacing: 2, lineLimit: 6)
+                    homeQuoteText(entry.verseText, size: 18.5, color: theme.quoteColor, alignment: .leading, lineSpacing: 6, lineLimit: 4)
+                    homeQuoteText(entry.verseText, size: 17.5, color: theme.quoteColor, alignment: .leading, lineSpacing: 5, lineLimit: 4)
+                    homeQuoteText(entry.verseText, size: 16.5, color: theme.quoteColor, alignment: .leading, lineSpacing: 5, lineLimit: 4)
+                    homeQuoteText(entry.verseText, size: 15.5, color: theme.quoteColor, alignment: .leading, lineSpacing: 4, lineLimit: 4)
+                    homeQuoteText(entry.verseText, size: 14.5, color: theme.quoteColor, alignment: .leading, lineSpacing: 4, lineLimit: 5)
+                    homeQuoteText(entry.verseText, size: 13.5, color: theme.quoteColor, alignment: .leading, lineSpacing: 3, lineLimit: 5)
+                    homeQuoteText(entry.verseText, size: 12.5, color: theme.quoteColor, alignment: .leading, lineSpacing: 3, lineLimit: 6)
                 }
+                .shadow(color: theme.shadowColor.opacity(0.16), radius: 5, x: 0, y: 2)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                .padding(.trailing, 88)
+                .padding(.trailing, 106)
 
-                Spacer(minLength: 12)
+                Spacer(minLength: 10)
 
                 Text(entry.verseRef)
-                    .font(.system(size: 10.5, weight: .medium, design: .rounded))
-                    .foregroundColor(theme.accentColor)
+                    .font(.system(size: 10.6, weight: .semibold, design: .rounded))
+                    .foregroundColor(theme.secondaryTextColor)
                     .lineLimit(1)
                     .minimumScaleFactor(0.82)
-                    .padding(.bottom, 2)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, 18)
-        .padding(.vertical, 14)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
     }
 }
 
@@ -943,48 +1111,71 @@ struct HomeLargeView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            ChurchLineArt(color: theme.illustrationColor)
-                .frame(width: 350, height: 300)
-                .padding(.bottom, 8)
+            SimpleChurchLineArt(color: theme.illustrationColor)
+                .frame(width: 304, height: 244)
+                .offset(y: 58)
 
             VStack(spacing: 0) {
-                OrthodoxCrossIcon(topColor: theme.accentHighlight, bottomColor: theme.accentColor)
-                    .frame(width: 38, height: 46)
-                    .padding(.top, 10)
+                CrossSeal(theme: theme)
+                    .frame(width: 48, height: 48)
+                    .padding(.top, 8)
 
                 Text("СТИХ ДАНА")
-                    .font(.system(size: 14, weight: .medium, design: .rounded))
-                    .kerning(4.2)
-                    .foregroundColor(theme.accentColor)
-                    .padding(.top, 12)
+                    .font(.system(size: 13.2, weight: .semibold, design: .rounded))
+                    .kerning(4)
+                    .foregroundColor(theme.titleColor)
+                    .padding(.top, 10)
+
+                OrnamentalDivider(theme: theme, compact: false)
+                    .frame(width: 150)
+                    .padding(.top, 10)
 
                 Spacer(minLength: 18)
 
                 ViewThatFits(in: .vertical) {
-                    homeQuoteText(entry.verseText, size: 24, color: theme.quoteColor, alignment: .center, lineSpacing: 8, lineLimit: 4)
-                    homeQuoteText(entry.verseText, size: 22, color: theme.quoteColor, alignment: .center, lineSpacing: 7, lineLimit: 4)
-                    homeQuoteText(entry.verseText, size: 20, color: theme.quoteColor, alignment: .center, lineSpacing: 6, lineLimit: 4)
-                    homeQuoteText(entry.verseText, size: 18, color: theme.quoteColor, alignment: .center, lineSpacing: 5, lineLimit: 4)
-                    homeQuoteText(entry.verseText, size: 17, color: theme.quoteColor, alignment: .center, lineSpacing: 4, lineLimit: 5)
-                    homeQuoteText(entry.verseText, size: 16, color: theme.quoteColor, alignment: .center, lineSpacing: 4, lineLimit: 5)
-                    homeQuoteText(entry.verseText, size: 15, color: theme.quoteColor, alignment: .center, lineSpacing: 3, lineLimit: 5)
+                    homeQuoteText(entry.verseText, size: 25, color: theme.quoteColor, alignment: .center, lineSpacing: 8, lineLimit: 4)
+                    homeQuoteText(entry.verseText, size: 23, color: theme.quoteColor, alignment: .center, lineSpacing: 7, lineLimit: 4)
+                    homeQuoteText(entry.verseText, size: 21, color: theme.quoteColor, alignment: .center, lineSpacing: 6, lineLimit: 4)
+                    homeQuoteText(entry.verseText, size: 19, color: theme.quoteColor, alignment: .center, lineSpacing: 5, lineLimit: 5)
+                    homeQuoteText(entry.verseText, size: 17.5, color: theme.quoteColor, alignment: .center, lineSpacing: 4, lineLimit: 5)
+                    homeQuoteText(entry.verseText, size: 16, color: theme.quoteColor, alignment: .center, lineSpacing: 4, lineLimit: 6)
+                    homeQuoteText(entry.verseText, size: 14.5, color: theme.quoteColor, alignment: .center, lineSpacing: 3, lineLimit: 6)
                 }
+                .shadow(color: theme.shadowColor.opacity(0.18), radius: 7, x: 0, y: 2)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .padding(.horizontal, 34)
+                .padding(.horizontal, 28)
 
                 Spacer(minLength: 24)
 
-                Text(entry.verseRef)
-                    .font(.system(size: 11, weight: .medium, design: .rounded))
-                    .foregroundColor(theme.accentColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.82)
-                    .padding(.bottom, 8)
+                HStack(spacing: 10) {
+                    Capsule(style: .continuous)
+                        .fill(theme.separatorColor)
+                        .frame(minWidth: 18, maxWidth: .infinity)
+                        .frame(height: 1)
+                        .layoutPriority(0)
+
+                    Text(entry.verseRef)
+                        .font(.system(size: 11.4, weight: .semibold, design: .rounded))
+                        .foregroundColor(theme.secondaryTextColor)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.62)
+                        .allowsTightening(true)
+                        .layoutPriority(2)
+
+                    Capsule(style: .continuous)
+                        .fill(theme.separatorColor)
+                        .frame(minWidth: 18, maxWidth: .infinity)
+                        .frame(height: 1)
+                        .layoutPriority(0)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 18)
+                .padding(.bottom, 6)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 14)
     }
 }
 
@@ -992,37 +1183,66 @@ struct HomeLargeView: View {
 
 struct LockInlineView: View {
     let entry: BibleVerseEntry
+    fileprivate let theme: HomeWidgetTheme
+
     var body: some View {
         Text("✝ \(entry.verseRef)")
-            .font(.system(size: 12, weight: .medium))
+            .font(.system(size: 12, weight: .semibold, design: .rounded))
+            .foregroundColor(theme.lockTextColor)
     }
 }
 
 struct LockRectangularView: View {
     let entry: BibleVerseEntry
+    fileprivate let theme: HomeWidgetTheme
+
     var body: some View {
-        ViewThatFits(in: .vertical) {
-            quoteText(entry.verseText, size: 13, alignment: .leading)
-            quoteText(entry.verseText, size: 12, alignment: .leading)
-            quoteText(entry.verseText, size: 11, alignment: .leading)
-            quoteText(entry.verseText, size: 10, alignment: .leading)
-            quoteText(entry.verseText, size: 9, alignment: .leading)
-            quoteText(entry.verseText, size: 8, alignment: .leading)
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 4) {
+                Image(systemName: "cross.fill")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundColor(theme.lockSecondaryColor)
+
+                Text(entry.verseRef)
+                    .font(.system(size: 8.6, weight: .semibold, design: .rounded))
+                    .foregroundColor(theme.lockSecondaryColor)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            }
+
+            ViewThatFits(in: .vertical) {
+                quoteText(entry.verseText, size: 12.5, color: theme.lockTextColor, alignment: .leading, lineSpacing: 1)
+                quoteText(entry.verseText, size: 11.5, color: theme.lockTextColor, alignment: .leading, lineSpacing: 1)
+                quoteText(entry.verseText, size: 10.5, color: theme.lockTextColor, alignment: .leading, lineSpacing: 1)
+                quoteText(entry.verseText, size: 9.5, color: theme.lockTextColor, alignment: .leading, lineSpacing: 0)
+                quoteText(entry.verseText, size: 8.5, color: theme.lockTextColor, alignment: .leading, lineSpacing: 0)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .padding(.vertical, 2)
     }
 }
 
 struct LockCircularView: View {
     let entry: BibleVerseEntry
+    fileprivate let theme: HomeWidgetTheme
+
     var body: some View {
         ZStack {
             AccessoryWidgetBackground()
-            VStack(spacing: 2) {
+            Circle()
+                .stroke(theme.lockSecondaryColor.opacity(0.48), lineWidth: 1)
+                .padding(3)
+
+            VStack(spacing: 3) {
                 Image(systemName: "cross.fill")
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(theme.lockSecondaryColor)
+
                 Text(entry.verseRef)
-                    .font(.system(size: 8, weight: .semibold))
+                    .font(.system(size: 7.8, weight: .semibold, design: .rounded))
+                    .foregroundColor(theme.lockTextColor)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .minimumScaleFactor(0.7)
@@ -1061,13 +1281,18 @@ struct HomeWidgetEntryView: View {
 struct LockWidgetEntryView: View {
     var entry: BibleVerseEntry
     @Environment(\.widgetFamily) var family
+    @Environment(\.colorScheme) var colorScheme
+
+    private var theme: HomeWidgetTheme {
+        colorScheme == .light ? .light : .dark
+    }
 
     var body: some View {
         switch family {
-        case .accessoryInline:      LockInlineView(entry: entry)
-        case .accessoryRectangular: LockRectangularView(entry: entry)
-        case .accessoryCircular:    LockCircularView(entry: entry)
-        default:                    LockRectangularView(entry: entry)
+        case .accessoryInline:      LockInlineView(entry: entry, theme: theme)
+        case .accessoryRectangular: LockRectangularView(entry: entry, theme: theme)
+        case .accessoryCircular:    LockCircularView(entry: entry, theme: theme)
+        default:                    LockRectangularView(entry: entry, theme: theme)
         }
     }
 }
