@@ -1,7 +1,8 @@
 diff --git a/node_modules/@bacons/apple-targets/build/with-xcode-changes.js b/node_modules/@bacons/apple-targets/build/with-xcode-changes.js
+index 15a7aa2..49d2ff1 100644
 --- a/node_modules/@bacons/apple-targets/build/with-xcode-changes.js
 +++ b/node_modules/@bacons/apple-targets/build/with-xcode-changes.js
-@@ -184,20 +184,19 @@
+@@ -184,20 +184,19 @@ async function applyXcodeChanges(config, project, props) {
          }
      }
      if (targetToUpdate) {
@@ -28,15 +29,15 @@ diff --git a/node_modules/@bacons/apple-targets/build/with-xcode-changes.js b/no
          targetToUpdate.props.buildConfigurationList =
              (0, configuration_list_1.createConfigurationListForType)(project, props);
 diff --git a/node_modules/@bacons/apple-targets/ios/ExtensionStorageModule.swift b/node_modules/@bacons/apple-targets/ios/ExtensionStorageModule.swift
+index 56a949b..e423ec8 100644
 --- a/node_modules/@bacons/apple-targets/ios/ExtensionStorageModule.swift
 +++ b/node_modules/@bacons/apple-targets/ios/ExtensionStorageModule.swift
-@@ -1,16 +1,22 @@
+@@ -1,3 +1,4 @@
 +import Foundation
  import ExpoModulesCore
  import WidgetKit
  
- public class ExtensionStorageModule: Module {
-     public func definition() -> ModuleDefinition {
+@@ -6,14 +7,18 @@ public class ExtensionStorageModule: Module {
          Name("ExtensionStorage")
          
          Function("remove") { (forKey: String, suiteName: String?) in
@@ -59,8 +60,8 @@ diff --git a/node_modules/@bacons/apple-targets/ios/ExtensionStorageModule.swift
 +                }
              }
          }
-@@ -28,24 +34,30 @@ public class ExtensionStorageModule: Module {
-         Function("setArray") { (forKey: String, data: [[String: Any]], suiteName: String?) -> Bool in
+         
+@@ -31,7 +36,9 @@ public class ExtensionStorageModule: Module {
              // Convert the incoming array of dictionaries directly to JSON data
              do {
                  let jsonData = try JSONSerialization.data(withJSONObject: data, options: [])
@@ -71,10 +72,7 @@ diff --git a/node_modules/@bacons/apple-targets/ios/ExtensionStorageModule.swift
                  return true
              } catch {
                  // If encoding fails for some reason, return false
-                 return false
-             }
-         }
-         
+@@ -42,7 +49,9 @@ public class ExtensionStorageModule: Module {
          Function("setObject") { (forKey: String, data: [String: Any], suiteName: String?) -> Bool in
              do {
                  let jsonData = try JSONSerialization.data(withJSONObject: data, options: [])
@@ -85,10 +83,7 @@ diff --git a/node_modules/@bacons/apple-targets/ios/ExtensionStorageModule.swift
                  return true
              } catch {
                  // If encoding fails for some reason, return false
-                 return false
-             }
-         }
-         
+@@ -53,11 +62,13 @@ public class ExtensionStorageModule: Module {
          Function("setInt") { (key: String, value: Int, group: String?) in
              let userDefaults = UserDefaults(suiteName: group)
              userDefaults?.set(value, forKey: key)
@@ -100,3 +95,5 @@ diff --git a/node_modules/@bacons/apple-targets/ios/ExtensionStorageModule.swift
              userDefaults?.set(value, forKey: key)
 +            userDefaults?.synchronize()
          }        
+ 
+         Function("get") { (key: String, group: String?) -> String? in
