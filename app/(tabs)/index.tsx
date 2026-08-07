@@ -3,6 +3,7 @@ import {
   Alert,
   Animated,
   FlatList,
+  Modal,
   Platform,
   Pressable,
   Share,
@@ -108,6 +109,7 @@ export default function HomeScreen() {
   const [pagerIndex, setPagerIndex] = useState(initialPagerIndex);
   const [pinnedIndex, setPinnedIndex] = useState<number | null>(null);
   const [favorites, setFavorites] = useState<number[]>([]);
+  const [isAboutVisible, setIsAboutVisible] = useState(false);
   const [quotePagerHeight, setQuotePagerHeight] = useState(0);
   const quotePagerRef = useRef<FlatList>(null);
   const backgroundPagerRef = useRef<FlatList>(null);
@@ -192,6 +194,16 @@ export default function HomeScreen() {
   const handleWidgetInfo = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push("/widget-info");
+  }, []);
+
+  const handleOpenAbout = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsAboutVisible(true);
+  }, []);
+
+  const handleCloseAbout = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsAboutVisible(false);
   }, []);
 
   const handleTogglePinnedVerse = useCallback(() => {
@@ -459,9 +471,18 @@ export default function HomeScreen() {
 
       <View style={[styles.inner, { paddingTop: topPadding + 8 }]}>
         <View style={styles.topRow}>
-          <View style={styles.crossContainer}>
+          <Pressable
+            onPress={handleOpenAbout}
+            style={({ pressed }) => [
+              styles.crossContainer,
+              { opacity: pressed ? 0.6 : 1 },
+            ]}
+            hitSlop={12}
+            accessibilityLabel="О апликацији"
+            accessibilityRole="button"
+          >
             <FontAwesome5 name="cross" size={18} color={Colors.gold} />
-          </View>
+          </Pressable>
           <Text style={styles.headerDateText}>{formatDate(new Date())}</Text>
           <Pressable
             onPress={handleWidgetInfo}
@@ -659,6 +680,42 @@ export default function HomeScreen() {
           </View>
         </View>
       </View>
+
+      <Modal
+        visible={isAboutVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCloseAbout}
+      >
+        <View style={styles.aboutModal}>
+          <Pressable
+            style={styles.aboutBackdrop}
+            onPress={handleCloseAbout}
+            accessibilityRole="button"
+            accessibilityLabel="Затвори"
+          />
+          <BlurView intensity={28} tint="dark" style={styles.aboutCard}>
+            <View style={styles.aboutIconBg}>
+              <FontAwesome5 name="cross" size={24} color={Colors.gold} />
+            </View>
+            <Text style={styles.aboutTitle}>О апликацији</Text>
+            <Text style={styles.aboutText}>
+              Аутори апликације су Лука Артуков и Михаило Ковачевић.
+            </Text>
+            <Pressable
+              onPress={handleCloseAbout}
+              style={({ pressed }) => [
+                styles.aboutCloseBtn,
+                { opacity: pressed ? 0.7 : 1 },
+              ]}
+              accessibilityLabel="Затвори о апликацији"
+              accessibilityRole="button"
+            >
+              <Text style={styles.aboutCloseText}>Затвори</Text>
+            </Pressable>
+          </BlurView>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -734,6 +791,70 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     marginLeft: 8,
+  },
+  aboutModal: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    backgroundColor: "rgba(0, 0, 0, 0.56)",
+  },
+  aboutBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  aboutCard: {
+    width: "100%",
+    maxWidth: 360,
+    alignItems: "center",
+    overflow: "hidden",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.cardBorder,
+    backgroundColor: Colors.overlayCard,
+    paddingHorizontal: 24,
+    paddingVertical: 28,
+  },
+  aboutIconBg: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.separator,
+    backgroundColor: Colors.iconBackground,
+  },
+  aboutTitle: {
+    fontSize: 22,
+    fontFamily: "Inter_700Bold",
+    color: Colors.text,
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  aboutText: {
+    fontSize: 16,
+    fontFamily: "Inter_400Regular",
+    color: Colors.textMuted,
+    lineHeight: 24,
+    textAlign: "center",
+    marginBottom: 22,
+  },
+  aboutCloseBtn: {
+    minWidth: 124,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: Colors.separator,
+    backgroundColor: Colors.iconBackground,
+    paddingHorizontal: 22,
+  },
+  aboutCloseText: {
+    fontSize: 15,
+    fontFamily: "Inter_600SemiBold",
+    color: Colors.gold,
   },
   bottomVerseCard: {
     flex: 1,
