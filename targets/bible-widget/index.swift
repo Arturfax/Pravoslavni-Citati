@@ -893,106 +893,214 @@ private struct SimpleChurchLineArt: View {
             let width = proxy.size.width
             let height = proxy.size.height
             let outline = StrokeStyle(
-                lineWidth: max(width * 0.009, 1),
+                lineWidth: max(width * 0.0078, 0.95),
                 lineCap: .round,
                 lineJoin: .round
             )
             let detail = StrokeStyle(
-                lineWidth: max(width * 0.0048, 0.7),
+                lineWidth: max(width * 0.0044, 0.66),
+                lineCap: .round,
+                lineJoin: .round
+            )
+            let fine = StrokeStyle(
+                lineWidth: max(width * 0.0027, 0.46),
                 lineCap: .round,
                 lineJoin: .round
             )
 
             ZStack {
                 Path { path in
-                    path.move(to: CGPoint(x: width * 0.08, y: height * 0.78))
-                    path.addLine(to: CGPoint(x: width * 0.92, y: height * 0.78))
-                    path.move(to: CGPoint(x: width * 0.12, y: height * 0.68))
-                    path.addLine(to: CGPoint(x: width * 0.88, y: height * 0.68))
+                    path.move(to: CGPoint(x: width * 0.07, y: height * 0.90))
+                    path.addLine(to: CGPoint(x: width * 0.93, y: height * 0.90))
+                    path.move(to: CGPoint(x: width * 0.08, y: height * 0.85))
+                    path.addLine(to: CGPoint(x: width * 0.92, y: height * 0.85))
 
-                    path.addRoundedRect(
-                        in: CGRect(x: width * 0.25, y: height * 0.43, width: width * 0.50, height: height * 0.35),
-                        cornerSize: CGSize(width: width * 0.012, height: width * 0.012)
+                    path.move(to: CGPoint(x: width * 0.08, y: height * 0.85))
+                    path.addLine(to: CGPoint(x: width * 0.08, y: height * 0.65))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.27, y: height * 0.63),
+                        control: CGPoint(x: width * 0.16, y: height * 0.59)
                     )
-                    path.addRoundedRect(
-                        in: CGRect(x: width * 0.11, y: height * 0.50, width: width * 0.16, height: height * 0.28),
-                        cornerSize: CGSize(width: width * 0.01, height: width * 0.01)
+                    path.addLine(to: CGPoint(x: width * 0.31, y: height * 0.85))
+                    path.move(to: CGPoint(x: width * 0.69, y: height * 0.85))
+                    path.addLine(to: CGPoint(x: width * 0.73, y: height * 0.63))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.92, y: height * 0.65),
+                        control: CGPoint(x: width * 0.84, y: height * 0.59)
                     )
-                    path.addRoundedRect(
-                        in: CGRect(x: width * 0.73, y: height * 0.50, width: width * 0.16, height: height * 0.28),
-                        cornerSize: CGSize(width: width * 0.01, height: width * 0.01)
+                    path.addLine(to: CGPoint(x: width * 0.92, y: height * 0.85))
+
+                    path.move(to: CGPoint(x: width * 0.30, y: height * 0.85))
+                    path.addLine(to: CGPoint(x: width * 0.30, y: height * 0.58))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.50, y: height * 0.48),
+                        control: CGPoint(x: width * 0.32, y: height * 0.42)
+                    )
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.70, y: height * 0.58),
+                        control: CGPoint(x: width * 0.68, y: height * 0.42)
+                    )
+                    path.addLine(to: CGPoint(x: width * 0.70, y: height * 0.85))
+
+                    path.move(to: CGPoint(x: width * 0.23, y: height * 0.63))
+                    path.addLine(to: CGPoint(x: width * 0.29, y: height * 0.43))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.40, y: height * 0.32),
+                        control: CGPoint(x: width * 0.32, y: height * 0.36)
+                    )
+                    path.addLine(to: CGPoint(x: width * 0.60, y: height * 0.32))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.71, y: height * 0.43),
+                        control: CGPoint(x: width * 0.68, y: height * 0.36)
+                    )
+                    path.addLine(to: CGPoint(x: width * 0.77, y: height * 0.63))
+
+                    path.move(to: CGPoint(x: width * 0.18, y: height * 0.62))
+                    path.addLine(to: CGPoint(x: width * 0.18, y: height * 0.42))
+                    path.addLine(to: CGPoint(x: width * 0.31, y: height * 0.42))
+                    path.addLine(to: CGPoint(x: width * 0.31, y: height * 0.62))
+                    path.move(to: CGPoint(x: width * 0.69, y: height * 0.62))
+                    path.addLine(to: CGPoint(x: width * 0.69, y: height * 0.42))
+                    path.addLine(to: CGPoint(x: width * 0.82, y: height * 0.42))
+                    path.addLine(to: CGPoint(x: width * 0.82, y: height * 0.62))
+
+                    path.move(to: CGPoint(x: width * 0.20, y: height * 0.42))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.245, y: height * 0.29),
+                        control: CGPoint(x: width * 0.20, y: height * 0.34)
+                    )
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.29, y: height * 0.42),
+                        control: CGPoint(x: width * 0.29, y: height * 0.34)
+                    )
+                    path.move(to: CGPoint(x: width * 0.71, y: height * 0.42))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.755, y: height * 0.29),
+                        control: CGPoint(x: width * 0.71, y: height * 0.34)
+                    )
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.80, y: height * 0.42),
+                        control: CGPoint(x: width * 0.80, y: height * 0.34)
                     )
 
-                    addDomeOutline(
-                        to: &path,
-                        leftX: width * 0.30,
-                        rightX: width * 0.70,
-                        baseY: height * 0.43,
-                        apexY: height * 0.14
+                    path.move(to: CGPoint(x: width * 0.35, y: height * 0.28))
+                    path.addLine(to: CGPoint(x: width * 0.35, y: height * 0.18))
+                    path.addLine(to: CGPoint(x: width * 0.65, y: height * 0.18))
+                    path.addLine(to: CGPoint(x: width * 0.65, y: height * 0.28))
+                    path.move(to: CGPoint(x: width * 0.37, y: height * 0.18))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.50, y: height * 0.045),
+                        control: CGPoint(x: width * 0.37, y: height * 0.09)
                     )
-                    addDomeOutline(
-                        to: &path,
-                        leftX: width * 0.13,
-                        rightX: width * 0.27,
-                        baseY: height * 0.50,
-                        apexY: height * 0.31
-                    )
-                    addDomeOutline(
-                        to: &path,
-                        leftX: width * 0.73,
-                        rightX: width * 0.87,
-                        baseY: height * 0.50,
-                        apexY: height * 0.31
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.63, y: height * 0.18),
+                        control: CGPoint(x: width * 0.63, y: height * 0.09)
                     )
 
-                    addArch(to: &path, x: width * 0.41, width: width * 0.18, top: height * 0.58, bottom: height * 0.78)
-                    addArch(to: &path, x: width * 0.17, width: width * 0.06, top: height * 0.63, bottom: height * 0.78)
-                    addArch(to: &path, x: width * 0.77, width: width * 0.06, top: height * 0.63, bottom: height * 0.78)
+                    addLineCross(to: &path, centerX: width * 0.50, baseY: height * 0.045, size: height * 0.072)
+                    addLineCross(to: &path, centerX: width * 0.245, baseY: height * 0.29, size: height * 0.054)
+                    addLineCross(to: &path, centerX: width * 0.755, baseY: height * 0.29, size: height * 0.054)
                 }
                 .stroke(color.opacity(0.58), style: outline)
 
                 Path { path in
-                    path.move(to: CGPoint(x: width * 0.33, y: height * 0.52))
-                    path.addLine(to: CGPoint(x: width * 0.67, y: height * 0.52))
-                    path.move(to: CGPoint(x: width * 0.36, y: height * 0.47))
-                    path.addLine(to: CGPoint(x: width * 0.64, y: height * 0.47))
-                    path.move(to: CGPoint(x: width * 0.31, y: height * 0.68))
-                    path.addLine(to: CGPoint(x: width * 0.69, y: height * 0.68))
-                    path.move(to: CGPoint(x: width * 0.14, y: height * 0.61))
-                    path.addLine(to: CGPoint(x: width * 0.26, y: height * 0.61))
-                    path.move(to: CGPoint(x: width * 0.74, y: height * 0.61))
-                    path.addLine(to: CGPoint(x: width * 0.86, y: height * 0.61))
-
-                    for x in [0.38, 0.62] {
-                        addArchedWindow(
-                            to: &path,
-                            x: width * x,
-                            y: height * 0.55,
-                            width: width * 0.055,
-                            height: height * 0.13
-                        )
+                    for y in [0.18, 0.24, 0.42, 0.63, 0.85] {
+                        path.move(to: CGPoint(x: width * 0.16, y: height * y))
+                        path.addLine(to: CGPoint(x: width * 0.84, y: height * y))
+                    }
+                    for x in [0.37, 0.43, 0.50, 0.57, 0.63] {
+                        path.move(to: CGPoint(x: width * x, y: height * 0.19))
+                        path.addLine(to: CGPoint(x: width * x, y: height * 0.32))
+                    }
+                    for x in [0.20, 0.245, 0.29, 0.71, 0.755, 0.80] {
+                        path.move(to: CGPoint(x: width * x, y: height * 0.43))
+                        path.addLine(to: CGPoint(x: width * x, y: height * 0.62))
                     }
 
-                    path.move(to: CGPoint(x: width * 0.50, y: height * 0.43))
-                    path.addLine(to: CGPoint(x: width * 0.50, y: height * 0.17))
-                    path.move(to: CGPoint(x: width * 0.39, y: height * 0.43))
-                    path.addQuadCurve(
-                        to: CGPoint(x: width * 0.50, y: height * 0.17),
-                        control: CGPoint(x: width * 0.42, y: height * 0.27)
-                    )
-                    path.move(to: CGPoint(x: width * 0.61, y: height * 0.43))
-                    path.addQuadCurve(
-                        to: CGPoint(x: width * 0.50, y: height * 0.17),
-                        control: CGPoint(x: width * 0.58, y: height * 0.27)
-                    )
+                    addArch(to: &path, x: width * 0.22, width: width * 0.07, top: height * 0.52, bottom: height * 0.73)
+                    addArch(to: &path, x: width * 0.71, width: width * 0.07, top: height * 0.52, bottom: height * 0.73)
+                    addArch(to: &path, x: width * 0.13, width: width * 0.07, top: height * 0.72, bottom: height * 0.84)
+                    addArch(to: &path, x: width * 0.22, width: width * 0.07, top: height * 0.72, bottom: height * 0.84)
+                    addArch(to: &path, x: width * 0.71, width: width * 0.07, top: height * 0.72, bottom: height * 0.84)
+                    addArch(to: &path, x: width * 0.80, width: width * 0.07, top: height * 0.72, bottom: height * 0.84)
 
-                    addRosette(to: &path, centerX: width * 0.50, centerY: height * 0.60, radius: width * 0.028)
-
-                    addLineCross(to: &path, centerX: width * 0.50, baseY: height * 0.16, size: height * 0.07)
-                    addLineCross(to: &path, centerX: width * 0.20, baseY: height * 0.31, size: height * 0.045)
-                    addLineCross(to: &path, centerX: width * 0.80, baseY: height * 0.31, size: height * 0.045)
+                    addArchedWindow(
+                        to: &path,
+                        x: width * 0.42,
+                        y: height * 0.36,
+                        width: width * 0.16,
+                        height: height * 0.22
+                    )
+                    addArchedWindow(
+                        to: &path,
+                        x: width * 0.41,
+                        y: height * 0.62,
+                        width: width * 0.18,
+                        height: height * 0.22
+                    )
+                    addArchedWindow(
+                        to: &path,
+                        x: width * 0.43,
+                        y: height * 0.70,
+                        width: width * 0.14,
+                        height: height * 0.14
+                    )
                 }
                 .stroke(color.opacity(0.30), style: detail)
+
+                Path { path in
+                    path.move(to: CGPoint(x: width * 0.38, y: height * 0.18))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.50, y: height * 0.05),
+                        control: CGPoint(x: width * 0.45, y: height * 0.11)
+                    )
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.62, y: height * 0.18),
+                        control: CGPoint(x: width * 0.55, y: height * 0.11)
+                    )
+                    for x in [0.43, 0.50, 0.57] {
+                        path.move(to: CGPoint(x: width * x, y: height * 0.18))
+                        path.addQuadCurve(
+                            to: CGPoint(x: width * 0.50, y: height * 0.05),
+                            control: CGPoint(x: width * x, y: height * 0.10)
+                        )
+                    }
+                    path.move(to: CGPoint(x: width * 0.39, y: height * 0.57))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.50, y: height * 0.49),
+                        control: CGPoint(x: width * 0.43, y: height * 0.50)
+                    )
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.61, y: height * 0.57),
+                        control: CGPoint(x: width * 0.57, y: height * 0.50)
+                    )
+                    path.move(to: CGPoint(x: width * 0.35, y: height * 0.66))
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.50, y: height * 0.59),
+                        control: CGPoint(x: width * 0.40, y: height * 0.59)
+                    )
+                    path.addQuadCurve(
+                        to: CGPoint(x: width * 0.65, y: height * 0.66),
+                        control: CGPoint(x: width * 0.60, y: height * 0.59)
+                    )
+                    path.move(to: CGPoint(x: width * 0.50, y: height * 0.71))
+                    path.addLine(to: CGPoint(x: width * 0.50, y: height * 0.84))
+                    path.move(to: CGPoint(x: width * 0.43, y: height * 0.76))
+                    path.addLine(to: CGPoint(x: width * 0.57, y: height * 0.76))
+
+                    for x in [0.13, 0.22, 0.71, 0.80] {
+                        path.move(to: CGPoint(x: width * (x + 0.035), y: height * 0.75))
+                        path.addLine(to: CGPoint(x: width * (x + 0.035), y: height * 0.84))
+                        path.move(to: CGPoint(x: width * x, y: height * 0.80))
+                        path.addLine(to: CGPoint(x: width * (x + 0.07), y: height * 0.80))
+                    }
+
+                    for step in stride(from: CGFloat(0.78), through: CGFloat(0.90), by: CGFloat(0.025)) {
+                        path.move(to: CGPoint(x: width * 0.30, y: height * step))
+                        path.addLine(to: CGPoint(x: width * 0.70, y: height * step))
+                    }
+                }
+                .stroke(color.opacity(0.18), style: fine)
             }
         }
     }
@@ -1197,19 +1305,7 @@ struct LockRectangularView: View {
     fileprivate let theme: HomeWidgetTheme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 4) {
-                Image(systemName: "cross.fill")
-                    .font(.system(size: 8, weight: .bold))
-                    .foregroundColor(theme.lockSecondaryColor)
-
-                Text(entry.verseRef)
-                    .font(.system(size: 8.6, weight: .semibold, design: .rounded))
-                    .foregroundColor(theme.lockSecondaryColor)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-            }
-
+        VStack(alignment: .leading, spacing: 0) {
             ViewThatFits(in: .vertical) {
                 quoteText(entry.verseText, size: 12.5, color: theme.lockTextColor, alignment: .leading, lineSpacing: 1)
                 quoteText(entry.verseText, size: 11.5, color: theme.lockTextColor, alignment: .leading, lineSpacing: 1)

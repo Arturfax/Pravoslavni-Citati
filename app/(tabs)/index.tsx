@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   FlatList,
   Platform,
@@ -14,10 +15,12 @@ import {
 import { Image } from "expo-image";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { Ionicons, FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router, useFocusEffect } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { runOnJS } from "react-native-reanimated";
 import Colors from "@/constants/colors";
 import { BIBLE_VERSES } from "@/constants/verses";
 import { CHURCH_IMAGES } from "@/constants/images";
@@ -45,6 +48,27 @@ function formatDate(date: Date): string {
 }
 
 const FAVORITES_KEY = "favorites";
+const LOOPED_VERSES = [
+  BIBLE_VERSES[BIBLE_VERSES.length - 1],
+  ...BIBLE_VERSES,
+  BIBLE_VERSES[0],
+];
+
+function getPagerIndexForVerse(index: number): number {
+  return index + 1;
+}
+
+function getVerseIndexForPager(index: number): number {
+  if (index <= 0) {
+    return BIBLE_VERSES.length - 1;
+  }
+
+  if (index >= BIBLE_VERSES.length + 1) {
+    return 0;
+  }
+
+  return index - 1;
+}
 
 function VerseContent({
   text,
@@ -78,19 +102,23 @@ function VerseContent({
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
-  const initialVerseIndex = getDailyVerseIndex();
+  const initialVerseIndex = useRef(getDailyVerseIndex()).current;
+  const initialPagerIndex = getPagerIndexForVerse(initialVerseIndex);
   const [verseIndex, setVerseIndex] = useState(initialVerseIndex);
+  const [pagerIndex, setPagerIndex] = useState(initialPagerIndex);
   const [pinnedIndex, setPinnedIndex] = useState<number | null>(null);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [quotePagerHeight, setQuotePagerHeight] = useState(0);
   const quotePagerRef = useRef<FlatList>(null);
   const backgroundPagerRef = useRef<FlatList>(null);
   const scrollOffset = useRef(new Animated.Value(0)).current;
+  const likeBurst = useRef(new Animated.Value(0)).current;
+  const lastLikeBurstAt = useRef(0);
   const imageCount = CHURCH_IMAGES.length;
 
   const safePageHeight = Math.max(quotePagerHeight, 1);
   const transitionTravel = Animated.modulo(scrollOffset, safePageHeight);
-  const settledOffset = verseIndex * safePageHeight;
+  const settledOffset = pagerIndex * safePageHeight;
   const overlayDelta = Animated.subtract(scrollOffset, settledOffset);
   const transitionInputRange = useMemo(
     () => [
@@ -137,18 +165,18 @@ export default function HomeScreen() {
   useEffect(() => {
     if (windowHeight > 0) {
       backgroundPagerRef.current?.scrollToOffset({
-        offset: verseIndex * windowHeight,
+        offset: pagerIndex * windowHeight,
         animated: false,
       });
     }
     if (quotePagerHeight > 0) {
       quotePagerRef.current?.scrollToOffset({
-        offset: verseIndex * quotePagerHeight,
+        offset: pagerIndex * quotePagerHeight,
         animated: false,
       });
-      scrollOffset.setValue(verseIndex * quotePagerHeight);
+      scrollOffset.setValue(pagerIndex * quotePagerHeight);
     }
-  }, [quotePagerHeight, scrollOffset, verseIndex, windowHeight]);
+  }, [pagerIndex, quotePagerHeight, scrollOffset, windowHeight]);
 
   useFocusEffect(
     useCallback(() => {
@@ -187,6 +215,67 @@ export default function HomeScreen() {
       return next;
     });
   }, [verseIndex]);
+
+  const animateLikeBurst = useCallback(() => {
+    const now = Date.now();
+    if (now - lastLikeBurstAt.current < 650) {
+      return false;
+    }
+
+    lastLikeBurstAt.current = now;
+    likeBurst.stopAnimation();
+    likeBurst.setValue(0);
+    Animated.sequence([
+      Animated.timing(likeBurst, {
+        toValue: 1,
+        duration: 140,
+        useNativeDriver: true,
+      }),
+      Animated.timing(likeBurst, {
+        toValue: 0,
+        delay: 180,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    return true;
+  }, [likeBurst]);
+
+  const handleLikeCurrentVerse = useCallback(() => {
+    if (!animateLikeBurst()) {
+      return;
+    }
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setFavorites((prev) => {
+      if (prev.includes(verseIndex)) {
+        return prev;
+      }
+
+      const next = [...prev, verseIndex];
+      AsyncStorage.setItem(FAVORITES_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, [animateLikeBurst, verseIndex]);
+
+  const handlePromptPinnedVerse = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const verse = BIBLE_VERSES[verseIndex];
+    const isPinned = pinnedIndex === verseIndex;
+
+    Alert.alert(
+      isPinned ? "Уклонити цитат са виџета?" : "Закачити цитат на виџет?",
+      `„${verse.text}”\n${verse.ref}`,
+      [
+        { text: "Откажи", style: "cancel" },
+        {
+          text: isPinned ? "Уклони" : "Закачи",
+          style: isPinned ? "destructive" : "default",
+          onPress: handleTogglePinnedVerse,
+        },
+      ],
+    );
+  }, [handleTogglePinnedVerse, pinnedIndex, verseIndex]);
 
   const handleShare = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -227,10 +316,47 @@ export default function HomeScreen() {
     [scrollOffset, syncBackgroundPager],
   );
 
+  const quoteGestures = useMemo(() => {
+    const nativeScroll = Gesture.Native();
+    const doubleTap = Gesture.Tap()
+      .numberOfTaps(2)
+      .maxDelay(250)
+      .maxDistance(18)
+      .onEnd((_event, success) => {
+        if (success) {
+          runOnJS(handleLikeCurrentVerse)();
+        }
+      });
+
+    const longPress = Gesture.LongPress()
+      .minDuration(520)
+      .maxDistance(18)
+      .onEnd((_event, success) => {
+        if (success) {
+          runOnJS(handlePromptPinnedVerse)();
+        }
+      });
+
+    return Gesture.Simultaneous(nativeScroll, Gesture.Exclusive(longPress, doubleTap));
+  }, [handleLikeCurrentVerse, handlePromptPinnedVerse]);
+
+  const likeBurstOpacity = likeBurst.interpolate({
+    inputRange: [0, 0.12, 0.72, 1],
+    outputRange: [0, 1, 1, 0],
+    extrapolate: "clamp",
+  });
+  const likeBurstScale = likeBurst.interpolate({
+    inputRange: [0, 0.48, 1],
+    outputRange: [0.68, 1.16, 1],
+    extrapolate: "clamp",
+  });
+
   const topPadding = Platform.OS === "web" ? 67 : insets.top;
-  const previousVerse = verseIndex > 0 ? BIBLE_VERSES[verseIndex - 1] : null;
+  const previousVerse = BIBLE_VERSES[
+    (verseIndex - 1 + BIBLE_VERSES.length) % BIBLE_VERSES.length
+  ];
   const currentVerse = BIBLE_VERSES[verseIndex];
-  const nextVerse = verseIndex < BIBLE_VERSES.length - 1 ? BIBLE_VERSES[verseIndex + 1] : null;
+  const nextVerse = BIBLE_VERSES[(verseIndex + 1) % BIBLE_VERSES.length];
 
   const previousOpacity = overlayDelta.interpolate({
     inputRange: [-safePageHeight, -safePageHeight * 0.45, 0],
@@ -281,12 +407,12 @@ export default function HomeScreen() {
       >
         <FlatList
           ref={backgroundPagerRef}
-          data={BIBLE_VERSES}
+          data={LOOPED_VERSES}
           keyExtractor={(_, index) => `bg-${index}`}
           style={StyleSheet.absoluteFill}
           scrollEnabled={false}
           pointerEvents="none"
-          initialScrollIndex={initialVerseIndex}
+          initialScrollIndex={initialPagerIndex}
           getItemLayout={(_, index) => ({
             length: windowHeight,
             offset: windowHeight * index,
@@ -295,7 +421,7 @@ export default function HomeScreen() {
           renderItem={({ index }) => (
             <View style={{ height: windowHeight }}>
               <Image
-                source={CHURCH_IMAGES[index % imageCount]}
+                source={CHURCH_IMAGES[getVerseIndexForPager(index) % imageCount]}
                 style={[StyleSheet.absoluteFill, { width: "100%", height: "100%" }]}
                 contentFit="cover"
                 contentPosition="center"
@@ -425,79 +551,111 @@ export default function HomeScreen() {
               </Pressable>
             </View>
 
-            <View
-              style={styles.bottomVerseContent}
-              onLayout={({ nativeEvent }) => {
-                const nextHeight = Math.round(nativeEvent.layout.height);
-                if (nextHeight > 0 && nextHeight !== quotePagerHeight) {
-                  setQuotePagerHeight(nextHeight);
-                }
-              }}
-            >
-              {quotePagerHeight > 0 ? (
-                <>
-                  <Animated.FlatList
-                    ref={quotePagerRef}
-                    data={BIBLE_VERSES}
-                    key={quotePagerHeight}
-                    keyExtractor={(_, index) => String(index)}
-                    initialScrollIndex={verseIndex}
-                    getItemLayout={(_, index) => ({
-                      length: quotePagerHeight,
-                      offset: quotePagerHeight * index,
-                      index,
-                    })}
-                    renderItem={() => (
-                      <View style={[styles.quotePageFrame, { height: quotePagerHeight }]} />
-                    )}
-                    pagingEnabled
-                    decelerationRate="fast"
-                    disableIntervalMomentum
-                    snapToInterval={quotePagerHeight}
-                    snapToAlignment="start"
-                    showsVerticalScrollIndicator={false}
-                    bounces={false}
-                    removeClippedSubviews={false}
-                    scrollEventThrottle={16}
-                    onScroll={handleQuoteScroll}
-                    onMomentumScrollEnd={({ nativeEvent }) => {
-                      const nextIndex = Math.round(
-                        nativeEvent.contentOffset.y / quotePagerHeight,
-                      );
-                      scrollOffset.setValue(nextIndex * quotePagerHeight);
-                      syncBackgroundPager(nativeEvent.contentOffset.y);
-                      if (nextIndex !== verseIndex) {
-                        setVerseIndex(nextIndex);
-                      }
-                    }}
-                  />
-                  <View pointerEvents="none" style={styles.quoteOverlay}>
-                    {previousVerse ? (
+            <GestureDetector gesture={quoteGestures}>
+              <View
+                style={styles.bottomVerseContent}
+                onLayout={({ nativeEvent }) => {
+                  const nextHeight = Math.round(nativeEvent.layout.height);
+                  if (nextHeight > 0 && nextHeight !== quotePagerHeight) {
+                    setQuotePagerHeight(nextHeight);
+                  }
+                }}
+              >
+                {quotePagerHeight > 0 ? (
+                  <>
+                    <Animated.FlatList
+                      ref={quotePagerRef}
+                      data={LOOPED_VERSES}
+                      key={quotePagerHeight}
+                      keyExtractor={(_, index) => String(index)}
+                      initialScrollIndex={pagerIndex}
+                      getItemLayout={(_, index) => ({
+                        length: quotePagerHeight,
+                        offset: quotePagerHeight * index,
+                        index,
+                      })}
+                      renderItem={() => (
+                        <View style={[styles.quotePageFrame, { height: quotePagerHeight }]} />
+                      )}
+                      pagingEnabled
+                      decelerationRate="fast"
+                      disableIntervalMomentum
+                      snapToInterval={quotePagerHeight}
+                      snapToAlignment="start"
+                      showsVerticalScrollIndicator={false}
+                      bounces={false}
+                      removeClippedSubviews={false}
+                      scrollEventThrottle={16}
+                      onScroll={handleQuoteScroll}
+                      onMomentumScrollEnd={({ nativeEvent }) => {
+                        const nextPagerIndex = Math.round(
+                          nativeEvent.contentOffset.y / quotePagerHeight,
+                        );
+                        const nextVerseIndex = getVerseIndexForPager(nextPagerIndex);
+                        const normalizedPagerIndex = getPagerIndexForVerse(nextVerseIndex);
+                        const isLoopBoundary = nextPagerIndex !== normalizedPagerIndex;
+                        const nextQuoteOffset = isLoopBoundary
+                          ? normalizedPagerIndex * quotePagerHeight
+                          : nextPagerIndex * quotePagerHeight;
+
+                        if (isLoopBoundary) {
+                          quotePagerRef.current?.scrollToOffset({
+                            offset: nextQuoteOffset,
+                            animated: false,
+                          });
+                          if (windowHeight > 0) {
+                            backgroundPagerRef.current?.scrollToOffset({
+                              offset: normalizedPagerIndex * windowHeight,
+                              animated: false,
+                            });
+                          }
+                        }
+
+                        scrollOffset.setValue(nextQuoteOffset);
+                        syncBackgroundPager(nextQuoteOffset);
+                        setPagerIndex(isLoopBoundary ? normalizedPagerIndex : nextPagerIndex);
+
+                        if (nextVerseIndex !== verseIndex) {
+                          setVerseIndex(nextVerseIndex);
+                        }
+                      }}
+                    />
+                    <View pointerEvents="none" style={styles.quoteOverlay}>
                       <VerseContent
                         text={previousVerse.text}
                         refText={previousVerse.ref}
                         textOpacity={previousOpacity}
                         translateY={previousTranslateY}
                       />
-                    ) : null}
-                    <VerseContent
-                      text={currentVerse.text}
-                      refText={currentVerse.ref}
-                      textOpacity={currentOpacity}
-                      translateY={currentTranslateY}
-                    />
-                    {nextVerse ? (
+                      <VerseContent
+                        text={currentVerse.text}
+                        refText={currentVerse.ref}
+                        textOpacity={currentOpacity}
+                        translateY={currentTranslateY}
+                      />
                       <VerseContent
                         text={nextVerse.text}
                         refText={nextVerse.ref}
                         textOpacity={nextOpacity}
                         translateY={nextTranslateY}
                       />
-                    ) : null}
-                  </View>
-                </>
-              ) : null}
-            </View>
+                    </View>
+                    <Animated.View
+                      pointerEvents="none"
+                      style={[
+                        styles.likeBurst,
+                        {
+                          opacity: likeBurstOpacity,
+                          transform: [{ scale: likeBurstScale }],
+                        },
+                      ]}
+                    >
+                      <Ionicons name="heart" size={88} color="#E05555" />
+                    </Animated.View>
+                  </>
+                ) : null}
+              </View>
+            </GestureDetector>
           </View>
         </View>
       </View>
@@ -601,6 +759,15 @@ const styles = StyleSheet.create({
     top: 94,
     bottom: 132,
     justifyContent: "center",
+  },
+  likeBurst: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
   },
   verseText: {
     fontSize: 20,
